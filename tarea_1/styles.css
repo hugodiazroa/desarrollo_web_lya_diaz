@@ -1,25 +1,67 @@
-body { 
-	font-family: Arial;
-	margin: 20px; 
+body {
+  font-family: Arial;
+  margin: 20px;
+  background-color: #121212;
+  color: #FFD700;
 }
-nav a { margin-right: 10px; }
-form { max-width: 500px; }
-input, select, button { 
-	display:block; 
-	margin:8px 0; 
-	width:100%; 
+
+nav a {
+  margin-right: 10px;
+  color: #FFD700;
+  text-decoration: none;
 }
-table { 
-	border-collapse: collapse; 
-	width:100%; 
+
+nav a:hover {
+  color: #fff2a8;
 }
-th, td { 
-	border:1px solid #ccc; 
-	padding:8px; 
+
+form {
+  max-width: 500px;
 }
-.bar { 
-	height:20px; 
-	background:#4CAF50; 
-	margin:5px 0; 
-	color:white; 
+
+input, select, button {
+  display: block;
+  margin: 8px 0;
+  width: 100%;
+  padding: 6px;
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+input::placeholder {
+  color: #ccc;
+}
+
+button {
+  background-color: #666;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #888;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: #1e1e1e;
+}
+
+th, td {
+  border: 1px solid #555;
+  padding: 8px;
+  color: #FFD700;
+}
+
+th {
+  background-color: #2a2a2a;
+}
+
+.bar {
+  height: 20px;
+  background: #666;
+  margin: 5px 0;
+  color: #FFD700;
+  text-align: center;
 }
