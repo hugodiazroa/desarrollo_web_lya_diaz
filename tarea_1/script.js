@@ -1,5 +1,5 @@
 function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
-function isURL(v){return /^(https?:\/\/)/.test(v);}
+function isURL(v){return /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/.test(v);}
 
 function validateRegister(){
   let name = document.getElementById("name").value;
