@@ -5,11 +5,9 @@ function validateRegister(){
   let name = document.getElementById("name").value;
   let email = document.getElementById("email").value;
   let type = document.getElementById("type").value;
-  let extra = document.getElementById("extra").value;
 
   if(!name || !email || !type){ alert("Required fields missing"); return false;}
   if(!isEmail(email)){ alert("Invalid email"); return false;}
-  if(!extra){ alert("Role-specific field required"); return false;}
   alert("Valid!");
   return false;
 }
