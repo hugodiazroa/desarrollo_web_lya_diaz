@@ -21,9 +21,9 @@ function updateExtra(){
 
 function loadMembers(){
   let data = [
-    {name:"Ana", type:"student_undergrad", email:"a@mail.com"},
-    {name:"Luis", type:"faculty", email:"l@mail.com"},
-    {name:"Eva", type:"staff", email:"e@mail.com"}
+    {name:"Ana", type:"student_undergrad", email:"z@mail.com"},
+    {name:"Luis", type:"faculty", email:"x@mail.com"},
+    {name:"Eva", type:"staff", email:"y@mail.com"}
   ];
 
   let filter = document.getElementById("filter").value;
