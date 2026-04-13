@@ -8,7 +8,11 @@ function validateRegister(){
 
   if(!name || !email || !type){ alert("Required fields missing"); return false;}
   if(!isEmail(email)){ alert("Invalid email"); return false;}
-  alert("Valid!");
+
+  setUser(name);
+  renderUser();
+
+  alert("Registered!");
   return false;
 }
 
@@ -88,3 +92,30 @@ function validateActivity(){
   alert("Valid!");
   return false;
 }
+
+function setUser(name){
+  localStorage.setItem("activeUser", name);
+}
+
+function logout(){
+  localStorage.removeItem("activeUser");
+  renderUser();
+}
+
+function renderUser(){
+  const container = document.getElementById("userStatus");
+  const user = localStorage.getItem("activeUser");
+
+  if(!container) return;
+
+  if(user){
+    container.innerHTML = `
+      <div>${user}</div>
+      <div><a href="#" onclick="logout()">Log out</a></div>
+    `;
+  } else {
+    container.innerHTML = `<div>You are not logged in</div>`;
+  }
+}
+
+window.addEventListener("load", renderUser);
