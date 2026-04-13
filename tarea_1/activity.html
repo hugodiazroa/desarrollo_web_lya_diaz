@@ -9,18 +9,38 @@
     <h2>Report Activity</h2>
     <form onsubmit="return validateActivity()">
       <input id="mname" placeholder="Member Name *">
-        <select>
-          <option>Artistic</option>
-          <option>Athletic</option>
-          <option>Tech</option>
-          <option>Social</option>
-          <option>Recreational</option>
-        </select>
-      <input placeholder="Days *">
-      <input placeholder="Time *">
+      <select>
+        <option>Artistic</option>
+        <option>Athletic</option>
+        <option>Tech</option>
+        <option>Social</option>
+        <option>Recreational</option>
+      </select>
+      <h3>Schedule *</h3>
+        <select id="day"></select>
+        <select id="hour"></select>
+        <select id="minute"></select>
+        <input id="duration" type="number" placeholder="Duration (minutes, max 240)">
+        <button type="button" onclick="addSchedule()">Add</button>
+      <ul id="scheduleList"></ul>
       <input type="file" id="file" multiple>
       <input id="link" placeholder="Related Link *">
       <button type="submit">Submit</button>
     </form>
+
+    <script>
+    window.onload = function(){
+      const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+      const daySelect = document.getElementById("day");
+      days.forEach(d=> daySelect.innerHTML += `<option>${d}</option>`);
+
+      const hour = document.getElementById("hour");
+      for(let i=0;i<24;i++) hour.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+
+      const minute = document.getElementById("minute");
+      for(let i=0;i<60;i++) minute.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+    }
+    </script>
+
   </body>
 </html>

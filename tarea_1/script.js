@@ -14,17 +14,6 @@ function validateRegister(){
   return false;
 }
 
-function validateActivity(){
-  let name = document.getElementById("mname").value;
-  let file = document.getElementById("file").files.length;
-  let link = document.getElementById("link").value;
-
-  if(!name || file === 0 || !link){ alert("Required fields missing"); return false;}
-  if(!isURL(link)){ alert("Invalid URL"); return false;}
-  alert("Valid!");
-  return false;
-}
-
 function updateExtra(){
   let type = document.getElementById("type").value;
   let label = document.getElementById("extraLabel");
@@ -51,4 +40,53 @@ function loadMembers(){
   filtered.forEach(d=>{
     tbody.innerHTML += `<tr><td>${d.name}</td><td>${d.type}</td><td>${d.email}</td></tr>`;
   });
+}
+
+let schedules = [];
+
+function addSchedule(){
+  let day = document.getElementById("day").value;
+  let hour = document.getElementById("hour").value;
+  let minute = document.getElementById("minute").value;
+  let duration = document.getElementById("duration").value;
+
+  if(!day || !hour || !minute || !duration){
+    alert("All schedule fields required");
+    return;
+  }
+
+  if(duration <= 0 || duration > 240){
+    alert("Duration must be 1–240 minutes");
+    return;
+  }
+
+  let entry = `${day} ${hour}:${minute} (${duration} min)`;
+  schedules.push(entry);
+
+  let list = document.getElementById("scheduleList");
+  list.innerHTML += `<li>${entry}</li>`;
+}
+
+function validateActivity(){
+  let name = document.getElementById("mname").value;
+  let file = document.getElementById("file").files.length;
+  let link = document.getElementById("link").value;
+
+  if(!name || file === 0 || !link){
+    alert("Required fields missing");
+    return false;
+  }
+
+  if(schedules.length === 0){
+    alert("At least one schedule is required");
+    return false;
+  }
+
+  if(!isURL(link)){
+    alert("Invalid URL");
+    return false;
+  }
+
+  alert("Valid!");
+  return false;
 }
