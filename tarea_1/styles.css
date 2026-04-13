@@ -1,0 +1,25 @@
+body { 
+	font-family: Arial;
+	margin: 20px; 
+}
+nav a { margin-right: 10px; }
+form { max-width: 500px; }
+input, select, button { 
+	display:block; 
+	margin:8px 0; 
+	width:100%; 
+}
+table { 
+	border-collapse: collapse; 
+	width:100%; 
+}
+th, td { 
+	border:1px solid #ccc; 
+	padding:8px; 
+}
+.bar { 
+	height:20px; 
+	background:#4CAF50; 
+	margin:5px 0; 
+	color:white; 
+}
