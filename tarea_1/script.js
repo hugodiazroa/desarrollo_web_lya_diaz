@@ -5,9 +5,15 @@ function validateRegister(){
   let name = document.getElementById("name").value;
   let email = document.getElementById("email").value;
   let type = document.getElementById("type").value;
+  let phone = document.getElementById("phone").value;
 
-  if(!name || !email || !type){ alert("Required fields missing"); return false;}
+  if(!name || !email || !type || !phone){ alert("Required fields missing"); return false;}
   if(!isEmail(email)){ alert("Invalid email"); return false;}
+
+  if(!/^\+?\d{1,15}$/.test(phone)){
+    alert("Phone must be up to 15 digits, optionally starting with +");
+    return false;
+  }
 
   setUser(name);
   renderUser();
