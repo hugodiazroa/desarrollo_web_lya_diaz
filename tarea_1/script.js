@@ -70,7 +70,7 @@ function addSchedule(){
 }
 
 function validateActivity(){
-  let name = document.getElementById("mname").value;
+  let name = localStorage.getItem("activeUser");
   let file = document.getElementById("file").files.length;
   let link = document.getElementById("link").value;
 
@@ -118,4 +118,33 @@ function renderUser(){
   }
 }
 
-window.addEventListener("load", renderUser);
+function toggleActivityAccess(){
+  const user = localStorage.getItem("activeUser");
+  const form = document.getElementById("activityForm");
+  const msg = document.getElementById("activityMessage");
+
+  if(!form || !msg) return;
+
+  if(user){
+    form.style.display = "block";
+    msg.style.display = "none";
+  } else {
+    form.style.display = "none";
+    msg.style.display = "block";
+  }
+}
+
+function fillActiveUser(){
+  const user = localStorage.getItem("activeUser");
+  const el = document.getElementById("activeUserName");
+
+  if(el && user){
+    el.textContent = user;
+  }
+}
+
+window.addEventListener("load", () => {
+  renderUser();
+  toggleActivityAccess();
+  fillActiveUser();
+});

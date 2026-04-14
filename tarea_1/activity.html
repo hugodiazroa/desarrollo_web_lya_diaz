@@ -11,27 +11,31 @@
   	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
     <nav><a href="index.html">Home</a></nav>
     <h2>Report Activity</h2>
-    <form onsubmit="return validateActivity()">
-      <input id="mname" placeholder="Member Name *">
-      <select>
-        <option>Artistic</option>
-        <option>Athletic</option>
-        <option>Tech</option>
-        <option>Social</option>
-        <option>Recreational</option>
-      </select>
-      <h3>Schedule *</h3>
-        <select id="day"></select>
-        <select id="hour"></select>
-        <select id="minute"></select>
-        <input id="duration" type="number" placeholder="Duration (minutes, max 240)">
-        <button type="button" onclick="addSchedule()">Add</button>
-      <ul id="scheduleList"></ul>
-      <input type="file" id="file" multiple>
-      <input id="link" placeholder="Related Link *">
-      <button type="submit">Submit</button>
-    </form>
-
+    <div id="activityMessage" style="display:none;">
+      <p>You can not add activities if you are not registered</p>
+    </div>
+    <div id="activityForm">
+      <form onsubmit="return validateActivity()">
+        <p>Member: <strong id="activeUserName"></strong></p>
+        <select>
+          <option>Artistic</option>
+          <option>Athletic</option>
+          <option>Tech</option>
+          <option>Social</option>
+          <option>Recreational</option>
+        </select>
+        <h3>Schedule *</h3>
+          <select id="day"></select>
+          <select id="hour"></select>
+          <select id="minute"></select>
+          <input id="duration" type="number" placeholder="Duration (minutes, max 240)">
+          <button type="button" onclick="addSchedule()">Add</button>
+        <ul id="scheduleList"></ul>
+        <input type="file" id="file" multiple>
+        <input id="link" placeholder="Related Link *">
+        <button type="submit">Submit</button>
+      </form>
+    </div>
     <script>
     window.onload = function(){
       const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
