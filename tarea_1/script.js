@@ -173,7 +173,7 @@ function setUser(name){
 
 function logout(){
   localStorage.removeItem("activeUser");
-  renderUser();
+  location.reload();
 }
 
 function renderUser(){
