@@ -36,7 +36,7 @@ A simple front-end web app aimed at members of the DCC that permits member regis
 ### 4. Member Listing (Static)
 - Filter and sort members
 - Demo dataset (hardcoded in `script.js`)
-- @todo: Here it should show activities of members when a member is selected 
+- Shows activities of members when a member is selected 
 
 ### 5. Statistics
 - @todo: Shows how many members each branch of the school has
