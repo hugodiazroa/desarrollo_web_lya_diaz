@@ -45,10 +45,10 @@ A simple front-end web app aimed at members of the DCC that permits member regis
 
 ### 6. Session Handling
 - Active user is selected after a user is registered correctly
-- @todo: add password for users after the project starts being full-stack
 - Uses `localStorage` for `active user`
 - Login state reflected across pages
 - Logout support
+- It will be added a password for users after the project starts being full-stack
 
 ---
 

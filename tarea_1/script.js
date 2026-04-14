@@ -75,7 +75,7 @@ function loadMembers(){
       type:"faculty",
       email:"r@mail.com",
       activities:[
-        {name:"", category:"Social", link:"https://example.com/j1"}
+        {name:"Club secreto", category:"Social", link:"https://example.com/j1"}
       ]
     }
   ];
@@ -335,7 +335,7 @@ function loadMetrics(){
       type:"faculty",
       email:"r@mail.com",
       activities:[
-        {name:"", category:"Social"}
+        {name:"Club secreto", category:"Social"}
       ]
     }
   ];
