@@ -16,7 +16,10 @@
     </div>
     <div id="activityForm">
       <form onsubmit="return validateActivity()">
-        <p>Member: <strong id="activeUserName"></strong></p>
+        <p>Owner of activity: <strong id="activeUserName"></strong></p>
+        <h3>Name of activity: *</h3>
+          <input id="activityName" placeholder="Activity Name *">
+        <h3>Category: *</h3>
         <select>
           <option>Artistic</option>
           <option>Athletic</option>
@@ -24,7 +27,7 @@
           <option>Social</option>
           <option>Recreational</option>
         </select>
-        <h3>Schedule *</h3>
+        <h3>Schedule: *</h3>
           <div class="schedule-row">
             <div class="field">
               <label for="day">Day</label>
@@ -49,12 +52,15 @@
             <button type="button" onclick="addSchedule()">Add</button>
           </div>
         <ul id="scheduleList"></ul>
-        <input type="file" id="file" multiple>
-        <input id="link" placeholder="Related Link *">
+        <h3>Image or video about activity: *</h3>
+          <input type="file" id="file" multiple>
+        <h3>Link of activity: *</h3>
+          <input id="link" placeholder="Related Link *">
         <button type="submit">Submit</button>
       </form>
     </div>
     <script>
+      
     window.onload = function(){
       const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
       const daySelect = document.getElementById("day");

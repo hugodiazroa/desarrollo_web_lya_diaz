@@ -25,23 +25,96 @@ function updateExtra(){
 
 function loadMembers(){
   let data = [
-    {name:"Ana", type:"student_undergrad", email:"z@mail.com"},
-    {name:"Luis", type:"faculty", email:"x@mail.com"},
-    {name:"Eva", type:"staff", email:"y@mail.com"}
+    {
+      name:"Ana",
+      type:"student_undergrad",
+      email:"x@mail.com",
+      activities:[
+        {name:"Programar perros", category:"Tech", link:"https://example.com/a1"},
+        {name:"Pasear perros", category:"Social", link:"https://example.com/a2"}
+      ]
+    },
+    {
+      name:"Luis",
+      type:"faculty",
+      email:"y@mail.com",
+      activities:[]
+    },
+    {
+      name:"Eva",
+      type:"staff",
+      email:"z@mail.com",
+      activities:[
+        {name:"Pintar gatos", category:"Artistic", link:"https://example.com/e1"}
+      ]
+    },
+    {
+      name:"Carlos",
+      type:"student_grad",
+      email:"a@mail.com",
+      activities:[
+        {name:"Maraton", category:"Athletic", link:"https://example.com/c1"},
+        {name:"Torneo de ajedrez", category:"Recreational", link:"https://example.com/c2"},
+        {name:"Congreso sobre programacion", category:"Tech", link:"https://example.com/c3"}
+      ]
+    },
+    {
+      name:"María",
+      type:"student_undergrad",
+      email:"v@mail.com",
+      activities:[]
+    },
+    {
+      name:"Jorge",
+      type:"faculty",
+      email:"r@mail.com",
+      activities:[
+        {name:"", category:"Social", link:"https://example.com/j1"}
+      ]
+    }
   ];
 
   let filter = document.getElementById("filter").value;
   let sort = document.getElementById("sort").value;
 
   let filtered = filter ? data.filter(d=>d.type===filter) : data;
-
   filtered.sort((a,b)=> a[sort].localeCompare(b[sort]));
 
   let tbody = document.getElementById("tbody");
   tbody.innerHTML="";
-  filtered.forEach(d=>{
-    tbody.innerHTML += `<tr><td>${d.name}</td><td>${d.type}</td><td>${d.email}</td></tr>`;
+
+  filtered.forEach((d, index)=>{
+    tbody.innerHTML += `
+      <tr onclick="toggleActivities(${index})" style="cursor:pointer;">
+        <td>${d.name}</td>
+        <td>${d.type}</td>
+        <td>${d.email}</td>
+      </tr>
+      <tr id="activities-${index}" style="display:none;">
+        <td colspan="3">${renderActivities(d.activities)}</td>
+      </tr>
+    `;
   });
+
+  window._members = filtered; // store globally for access
+}
+
+function renderActivities(activities){
+  if(!activities || activities.length === 0){
+    return "<em>No activities</em>";
+  }
+
+  return activities.map(a=>{
+    return `
+      <strong>${a.name}</strong> (${a.category}) - 
+      <a href="${a.link}" target="_blank">${a.link}</a>
+    `;
+  }).join("<br>");
+}
+
+function toggleActivities(index){
+  let row = document.getElementById(`activities-${index}`);
+  row.style.display = row.style.display === "none" ? "table-row" : "none";
 }
 
 let schedules = [];
@@ -71,10 +144,11 @@ function addSchedule(){
 
 function validateActivity(){
   let name = localStorage.getItem("activeUser");
+  let activityName = document.getElementById("activityName").value;
   let file = document.getElementById("file").files.length;
   let link = document.getElementById("link").value;
 
-  if(!name || file === 0 || !link){
+  if(!name || !activityName || file === 0 || !link){
     alert("Required fields missing");
     return false;
   }
