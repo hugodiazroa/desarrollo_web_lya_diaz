@@ -53,14 +53,17 @@
           </div>
         <ul id="scheduleList"></ul>
         <h3>Image or video about activity: *</h3>
-          <input type="file" id="file" multiple>
+          <div id="fileContainer">
+            <input type="file" accept="image/*,video/*" onchange="handleSingleFile(this)">
+          </div>
+          <div id="fileInfo">0 / 8 files selected</div>
         <h3>Link of activity: *</h3>
           <input id="link" placeholder="Related Link *">
         <button type="submit">Submit</button>
       </form>
     </div>
     <script>
-      
+
     window.onload = function(){
       const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
       const daySelect = document.getElementById("day");

@@ -26,7 +26,7 @@ A simple front-end web app aimed at members of the DCC that permits member regis
 - Add activities with:
   - Category of activity
   - Schedule (day, time, duration)
-  - Image upload @todo: validate that only a image can be uploaded and not any other file
+  - At least one image or video
   - Link of activity
 - Activities only can be added if:
   - There is a logged-in user

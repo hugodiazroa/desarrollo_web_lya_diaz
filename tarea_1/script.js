@@ -145,17 +145,39 @@ function addSchedule(){
 function validateActivity(){
   let name = localStorage.getItem("activeUser");
   let activityName = document.getElementById("activityName").value;
-  let file = document.getElementById("file").files.length;
+  let inputs = document.querySelectorAll("#fileContainer input[type='file']");
+  let files = Array.from(inputs).flatMap(i => Array.from(i.files));
   let link = document.getElementById("link").value;
 
-  if(!name || !activityName || file === 0 || !link){
+  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+  const MAX_FILES = 8;
+
+  if(!name || !activityName || files.length === 0 || !link){
     alert("Required fields missing");
+    return false;
+  }
+
+  if(files.length > MAX_FILES){
+    alert("You can upload at most 8 files");
     return false;
   }
 
   if(schedules.length === 0){
     alert("At least one schedule is required");
     return false;
+  }
+
+  for(let file of files){
+    const isValidType = file.type.startsWith("image/") || file.type.startsWith("video/");
+    if(!isValidType){
+      alert("Only image or video files are allowed");
+      return false;
+    }
+
+    if(file.size > MAX_SIZE){
+      alert("Each file must be less than 100 MB");
+      return false;
+    }
   }
 
   if(!isURL(link)){
@@ -165,6 +187,50 @@ function validateActivity(){
 
   alert("Valid!");
   return false;
+}
+
+function handleFileSelection(){
+  const input = document.getElementById("file");
+  const info = document.getElementById("fileInfo");
+  const MAX_FILES = 8;
+
+  if(!input || !info) return;
+
+  const files = input.files;
+
+  if(files.length > MAX_FILES){
+    alert("You can upload at most 8 files");
+    input.value = "";
+    info.textContent = "0 / 8 files selected";
+    return;
+  }
+
+  info.textContent = `${files.length} / 8 files selected`;
+}
+
+function handleSingleFile(input){
+  const container = document.getElementById("fileContainer");
+  const info = document.getElementById("fileInfo");
+  const MAX_FILES = 8;
+
+  const inputs = container.querySelectorAll("input[type='file']");
+  const filledInputs = Array.from(inputs).filter(i => i.files.length > 0);
+
+  // update counter
+  info.textContent = `${filledInputs.length} / ${MAX_FILES} files selected`;
+
+  // stop if max reached
+  if(filledInputs.length >= MAX_FILES) return;
+
+  // only add new input if current one has a file and is the last input
+  if(input.files.length > 0 && input === inputs[inputs.length - 1]){
+    const newInput = document.createElement("input");
+    newInput.type = "file";
+    newInput.accept = "image/*,video/*";
+    newInput.onchange = function(){ handleSingleFile(this); };
+
+    container.appendChild(newInput);
+  }
 }
 
 function setUser(name){
