@@ -66,30 +66,9 @@ th {
   text-align: center;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-}
-
-#day { flex: 3; }
-#hour, #minute { flex: 1; }
-#duration { flex: 2; }
-
-.schedule-row button {
-  flex: 1.5;
-  margin-left: auto;
-}
-
 .schedule-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr auto;
   gap: 10px;
-}
-
-.schedule-row > * {
-  min-width: 0;
-}
-
-.schedule-row select,
-.schedule-row input {
-  width: 100%;
+  align-items: end;
 }
