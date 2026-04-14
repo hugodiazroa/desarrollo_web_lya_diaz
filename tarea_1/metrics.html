@@ -12,14 +12,19 @@
     <nav><a href="index.html">Home</a></nav>
     <h2>Metrics</h2>
 
-    <p>Students</p>
-    <div class="bar" style="width:70%">70%</div>
+    <div class="charts-container">
+      <div class="chart-box">
+        <h3>University Roles</h3>
+        <canvas id="rolesChart"></canvas>
+      </div>
 
-    <p>Faculty</p>
-    <div class="bar" style="width:30%">30%</div>
+      <div class="chart-box">
+        <h3>Activity Categories</h3>
+        <canvas id="activitiesChart"></canvas>
+      </div>
+    </div>
 
-    <p>Athletic Activities</p>
-    <div class="bar" style="width:50%">50%</div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   </body>
 </html>

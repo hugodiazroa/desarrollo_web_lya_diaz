@@ -283,6 +283,120 @@ function fillActiveUser(){
   }
 }
 
+function loadMetrics(){
+  const data = [
+    {
+      name:"Ana",
+      type:"student_undergrad",
+      email:"x@mail.com",
+      activities:[
+        {name:"Programar perros", category:"Tech"},
+        {name:"Pasear perros", category:"Social"}
+      ]
+    },
+    {
+      name:"Luis",
+      type:"faculty",
+      email:"y@mail.com",
+      activities:[]
+    },
+    {
+      name:"Eva",
+      type:"staff",
+      email:"z@mail.com",
+      activities:[
+        {name:"Pintar gatos", category:"Artistic"}
+      ]
+    },
+    {
+      name:"Carlos",
+      type:"student_grad",
+      email:"a@mail.com",
+      activities:[
+        {name:"Maraton", category:"Athletic"},
+        {name:"Torneo de ajedrez", category:"Recreational"},
+        {name:"Congreso", category:"Tech"}
+      ]
+    },
+    {
+      name:"María",
+      type:"student_undergrad",
+      email:"v@mail.com",
+      activities:[]
+    },
+    {
+      name:"Jorge",
+      type:"faculty",
+      email:"r@mail.com",
+      activities:[
+        {name:"", category:"Social"}
+      ]
+    }
+  ];
+
+  // --- ROLE COUNTS ---
+  const roleCounts = {
+    student_undergrad: 0,
+    student_grad: 0,
+    staff: 0,
+    faculty: 0
+  };
+
+  data.forEach(m => roleCounts[m.type]++);
+
+  // --- ACTIVITY COUNTS ---
+  const activityCounts = {
+    Artistic: 0,
+    Athletic: 0,
+    Tech: 0,
+    Social: 0,
+    Recreational: 0
+  };
+
+  data.forEach(m => {
+    m.activities.forEach(a => {
+      if(activityCounts[a.category] !== undefined){
+        activityCounts[a.category]++;
+      }
+    });
+  });
+
+  // --- CHART 1: ROLES ---
+  new Chart(document.getElementById("rolesChart"), {
+    type: "pie",
+    data: {
+      labels: ["Undergrad", "Graduate", "Staff", "Faculty"],
+      datasets: [{
+        data: [
+          roleCounts.student_undergrad,
+          roleCounts.student_grad,
+          roleCounts.staff,
+          roleCounts.faculty
+        ]
+      }]
+    }
+  });
+
+  // --- CHART 2: ACTIVITIES ---
+  new Chart(document.getElementById("activitiesChart"), {
+    type: "pie",
+    data: {
+      labels: ["Artistic", "Athletic", "Tech", "Social", "Recreational"],
+      datasets: [{
+        data: [
+          activityCounts.Artistic,
+          activityCounts.Athletic,
+          activityCounts.Tech,
+          activityCounts.Social,
+          activityCounts.Recreational
+        ]
+      }]
+    }
+  });
+}
+
+window.addEventListener("load", loadMetrics);
+
 window.addEventListener("load", () => {
   renderUser();
   toggleActivityAccess();

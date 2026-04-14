@@ -39,9 +39,8 @@ A simple front-end web app aimed at members of the DCC that permits member regis
 - Shows activities of members when a member is selected 
 
 ### 5. Statistics
-- @todo: Shows how many members each branch of the school has
-- @todo: Shows how many activities are in each category
-- @todo: Shows a bar graph of when do activities begin
+- Shows how many members each branch of the school has
+- Shows how many activities are in each category
 - This will be done with the static data in `script.js`,but then it will be done with the dinamic database that the webpage handles
 
 ### 6. Session Handling
