@@ -25,11 +25,29 @@
           <option>Recreational</option>
         </select>
         <h3>Schedule *</h3>
-          <select id="day"></select>
-          <select id="hour"></select>
-          <select id="minute"></select>
-          <input id="duration" type="number" placeholder="Duration (minutes, max 240)">
-          <button type="button" onclick="addSchedule()">Add</button>
+          <div class="schedule-row">
+            <div class="field">
+              <label for="day">Day</label>
+              <select id="day"></select>
+            </div>
+
+            <div class="field">
+              <label for="hour">Hour</label>
+              <select id="hour"></select>
+            </div>
+
+            <div class="field">
+              <label for="minute">Minute</label>
+              <select id="minute"></select>
+            </div>
+
+            <div class="field">
+              <label for="duration">Duration</label>
+              <input id="duration" type="number" placeholder="min (max 240)">
+            </div>
+
+            <button type="button" onclick="addSchedule()">Add</button>
+          </div>
         <ul id="scheduleList"></ul>
         <input type="file" id="file" multiple>
         <input id="link" placeholder="Related Link *">
