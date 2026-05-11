@@ -1,0 +1,95 @@
+body {
+  font-family: Arial;
+  margin: 20px;
+  background-color: #121212;
+  color: #FFD700;
+}
+
+nav a {
+  margin-right: 10px;
+  color: #FFD700;
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: #fff2a8;
+}
+
+form {
+  max-width: 500px;
+}
+
+input, select, button {
+  display: block;
+  margin: 8px 0;
+  width: 100%;
+  padding: 6px;
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+input::placeholder {
+  color: #ccc;
+}
+
+button {
+  background-color: #666;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #888;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: #1e1e1e;
+}
+
+th, td {
+  border: 1px solid #555;
+  padding: 8px;
+  color: #FFD700;
+}
+
+th {
+  background-color: #2a2a2a;
+}
+
+.bar {
+  height: 20px;
+  background: #666;
+  margin: 5px 0;
+  color: #FFD700;
+  text-align: center;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chart-box {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+canvas {
+  max-width: 100%;
+  height: 420px !important;
+}

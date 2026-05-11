@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <title>Members List</title>
+  </head>
+  <body onload="loadMembers()">
+  	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav><a href="index.html">Home</a></nav>
+    <h2>Members</h2>
+
+    <h3>Filter by:</h3>
+    <select id="filter" onchange="loadMembers()">
+      <option value="">All</option>
+      <option value="student_undergrad">Undergrad</option>
+      <option value="student_grad">Graduate</option>
+      <option value="staff">Staff</option>
+      <option value="faculty">Faculty</option>
+    </select>
+
+    <h3>Sort by:</h3>
+    <select id="sort" onchange="loadMembers()">
+      <option value="name">Name</option>
+      <option value="email">Email</option>
+    </select>
+
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Email</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </body>
+</html>
