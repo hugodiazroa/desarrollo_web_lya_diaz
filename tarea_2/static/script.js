@@ -30,79 +30,34 @@ function updateExtra(){
 }
 
 function loadMembers(){
-  let data = [
-    {
-      name:"Ana",
-      type:"student_undergrad",
-      email:"x@mail.com",
-      activities:[
-        {name:"Programar perros", category:"Tech", link:"https://example.com/a1"},
-        {name:"Pasear perros", category:"Social", link:"https://example.com/a2"}
-      ]
-    },
-    {
-      name:"Luis",
-      type:"faculty",
-      email:"y@mail.com",
-      activities:[]
-    },
-    {
-      name:"Eva",
-      type:"staff",
-      email:"z@mail.com",
-      activities:[
-        {name:"Pintar gatos", category:"Artistic", link:"https://example.com/e1"}
-      ]
-    },
-    {
-      name:"Carlos",
-      type:"student_grad",
-      email:"a@mail.com",
-      activities:[
-        {name:"Maraton", category:"Athletic", link:"https://example.com/c1"},
-        {name:"Torneo de ajedrez", category:"Recreational", link:"https://example.com/c2"},
-        {name:"Congreso sobre programacion", category:"Tech", link:"https://example.com/c3"}
-      ]
-    },
-    {
-      name:"María",
-      type:"student_undergrad",
-      email:"v@mail.com",
-      activities:[]
-    },
-    {
-      name:"Jorge",
-      type:"faculty",
-      email:"r@mail.com",
-      activities:[
-        {name:"Club secreto", category:"Social", link:"https://example.com/j1"}
-      ]
-    }
-  ];
+  fetch('/api/members')
+    .then(response => response.json())
+    .then(data => {
+      let filter = document.getElementById("filter").value;
+      let sort = document.getElementById("sort").value;
 
-  let filter = document.getElementById("filter").value;
-  let sort = document.getElementById("sort").value;
+      let filtered = filter ? data.filter(d=>d.type===filter) : data;
+      filtered.sort((a,b)=> a[sort].localeCompare(b[sort]));
 
-  let filtered = filter ? data.filter(d=>d.type===filter) : data;
-  filtered.sort((a,b)=> a[sort].localeCompare(b[sort]));
+      let tbody = document.getElementById("tbody");
+      tbody.innerHTML="";
 
-  let tbody = document.getElementById("tbody");
-  tbody.innerHTML="";
+      filtered.forEach((d, index)=>{
+        tbody.innerHTML += `
+          <tr onclick="toggleActivities(${index})" style="cursor:pointer;">
+            <td>${d.name}</td>
+            <td>${d.type}</td>
+            <td>${d.email}</td>
+          </tr>
+          <tr id="activities-${index}" style="display:none;">
+            <td colspan="3">${renderActivities(d.activities)}</td>
+          </tr>
+        `;
+      });
 
-  filtered.forEach((d, index)=>{
-    tbody.innerHTML += `
-      <tr onclick="toggleActivities(${index})" style="cursor:pointer;">
-        <td>${d.name}</td>
-        <td>${d.type}</td>
-        <td>${d.email}</td>
-      </tr>
-      <tr id="activities-${index}" style="display:none;">
-        <td colspan="3">${renderActivities(d.activities)}</td>
-      </tr>
-    `;
-  });
-
-  window._members = filtered; // store globally for access
+      window._members = filtered; // store globally for access
+    })
+    .catch(error => console.error('Error loading members:', error));
 }
 
 function renderActivities(activities){
@@ -290,115 +245,46 @@ function fillActiveUser(){
 }
 
 function loadMetrics(){
-  const data = [
-    {
-      name:"Ana",
-      type:"student_undergrad",
-      email:"x@mail.com",
-      activities:[
-        {name:"Programar perros", category:"Tech"},
-        {name:"Pasear perros", category:"Social"}
-      ]
-    },
-    {
-      name:"Luis",
-      type:"faculty",
-      email:"y@mail.com",
-      activities:[]
-    },
-    {
-      name:"Eva",
-      type:"staff",
-      email:"z@mail.com",
-      activities:[
-        {name:"Pintar gatos", category:"Artistic"}
-      ]
-    },
-    {
-      name:"Carlos",
-      type:"student_grad",
-      email:"a@mail.com",
-      activities:[
-        {name:"Maraton", category:"Athletic"},
-        {name:"Torneo de ajedrez", category:"Recreational"},
-        {name:"Congreso", category:"Tech"}
-      ]
-    },
-    {
-      name:"María",
-      type:"student_undergrad",
-      email:"v@mail.com",
-      activities:[]
-    },
-    {
-      name:"Jorge",
-      type:"faculty",
-      email:"r@mail.com",
-      activities:[
-        {name:"Club secreto", category:"Social"}
-      ]
-    }
-  ];
+  fetch('/api/metrics')
+    .then(response => response.json())
+    .then(data => {
+      const roleCounts = data.roles;
+      const activityCounts = data.activities;
 
-  // --- ROLE COUNTS ---
-  const roleCounts = {
-    student_undergrad: 0,
-    student_grad: 0,
-    staff: 0,
-    faculty: 0
-  };
+      // --- CHART 1: ROLES ---
+      new Chart(document.getElementById("rolesChart"), {
+        type: "pie",
+        data: {
+          labels: ["Undergrad", "Graduate", "Staff", "Faculty"],
+          datasets: [{
+            data: [
+              roleCounts.student_undergrad || 0,
+              roleCounts.student_grad || 0,
+              roleCounts.staff || 0,
+              roleCounts.faculty || 0
+            ]
+          }]
+        }
+      });
 
-  data.forEach(m => roleCounts[m.type]++);
-
-  // --- ACTIVITY COUNTS ---
-  const activityCounts = {
-    Artistic: 0,
-    Athletic: 0,
-    Tech: 0,
-    Social: 0,
-    Recreational: 0
-  };
-
-  data.forEach(m => {
-    m.activities.forEach(a => {
-      if(activityCounts[a.category] !== undefined){
-        activityCounts[a.category]++;
-      }
-    });
-  });
-
-  // --- CHART 1: ROLES ---
-  new Chart(document.getElementById("rolesChart"), {
-    type: "pie",
-    data: {
-      labels: ["Undergrad", "Graduate", "Staff", "Faculty"],
-      datasets: [{
-        data: [
-          roleCounts.student_undergrad,
-          roleCounts.student_grad,
-          roleCounts.staff,
-          roleCounts.faculty
-        ]
-      }]
-    }
-  });
-
-  // --- CHART 2: ACTIVITIES ---
-  new Chart(document.getElementById("activitiesChart"), {
-    type: "pie",
-    data: {
-      labels: ["Artistic", "Athletic", "Tech", "Social", "Recreational"],
-      datasets: [{
-        data: [
-          activityCounts.Artistic,
-          activityCounts.Athletic,
-          activityCounts.Tech,
-          activityCounts.Social,
-          activityCounts.Recreational
-        ]
-      }]
-    }
-  });
+      // --- CHART 2: ACTIVITIES ---
+      new Chart(document.getElementById("activitiesChart"), {
+        type: "pie",
+        data: {
+          labels: ["Artistic", "Athletic", "Tech", "Social", "Recreational"],
+          datasets: [{
+            data: [
+              activityCounts.arte || 0,
+              activityCounts.deporte || 0,
+              activityCounts.tecnologia || 0,
+              activityCounts.social || 0,
+              activityCounts.recreacion || 0
+            ]
+          }]
+        }
+      });
+    })
+    .catch(error => console.error('Error loading metrics:', error));
 }
 
 window.addEventListener("load", loadMetrics);

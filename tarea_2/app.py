@@ -1,7 +1,100 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
+from datetime import datetime
+import enum
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+# Database configuration
+DATABASE_URI = 'mysql+pymysql://cc5002:programacionweb@localhost:3306/tarea2'
+engine = create_engine(DATABASE_URI)
+Session = sessionmaker(bind=engine)
+
+class Base(DeclarativeBase):
+    pass
+
+# Enums for actividad
+class DiaEnum(enum.Enum):
+    lunes = 'lunes'
+    martes = 'martes'
+    miercoles = 'miércoles'
+    jueves = 'jueves'
+    viernes = 'viernes'
+    sabado = 'sábado'
+    domingo = 'domingo'
+
+class TipoActividadEnum(enum.Enum):
+    arte = 'arte'
+    deporte = 'deporte'
+    tecnologia = 'tecnología'
+    social = 'social'
+    recreacion = 'recreación'
+    otra = 'otra'
+
+# Models
+class Region(Base):
+    __tablename__ = 'region'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(String(200), nullable=False)
+    comunas: Mapped[list["Comuna"]] = relationship("Comuna", back_populates="region")
+
+class Comuna(Base):
+    __tablename__ = 'comuna'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(String(200), nullable=False)
+    region_id: Mapped[int] = mapped_column(Integer, ForeignKey('region.id'), nullable=False)
+    region: Mapped["Region"] = relationship("Region", back_populates="comunas")
+    miembros: Mapped[list["Miembro"]] = relationship("Miembro", back_populates="comuna")
+
+class Miembro(Base):
+    __tablename__ = 'miembro'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(80), nullable=False)
+    telefono: Mapped[str] = mapped_column(String(15), nullable=False)
+    tipo: Mapped[str] = mapped_column(String(50), nullable=False)
+    fecha_registro: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    comuna_id: Mapped[int] = mapped_column(Integer, ForeignKey('comuna.id'), nullable=False)
+    comuna: Mapped["Comuna"] = relationship("Comuna", back_populates="miembros")
+    actividades: Mapped[list["Actividad"]] = relationship("Actividad", back_populates="miembro")
+
+class Actividad(Base):
+    __tablename__ = 'actividad'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    miembro_id: Mapped[int] = mapped_column(Integer, ForeignKey('miembro.id'), nullable=False)
+    dia: Mapped[DiaEnum] = mapped_column(
+        SAEnum(
+            DiaEnum,
+            values_callable=lambda enum: [e.value for e in enum],
+            name='diaenum'
+        ),
+        nullable=False
+    )
+    hora_inicio: Mapped[str] = mapped_column(String(5), nullable=False)
+    duracion: Mapped[str] = mapped_column(String(5), nullable=False)
+    tipo: Mapped[TipoActividadEnum] = mapped_column(
+        SAEnum(
+            TipoActividadEnum,
+            values_callable=lambda enum: [e.value for e in enum],
+            name='tipoactividadenum'
+        ),
+        nullable=False
+    )
+    nombre: Mapped[str] = mapped_column(String(45), nullable=False)
+    descripcion: Mapped[str] = mapped_column(Text(500), nullable=True)
+    miembro: Mapped["Miembro"] = relationship("Miembro", back_populates="actividades")
+    fotos: Mapped[list["Foto"]] = relationship("Foto", back_populates="actividad")
+
+class Foto(Base):
+    __tablename__ = 'foto'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ruta_archivo: Mapped[str] = mapped_column(String(300), nullable=False)
+    nombre_archivo: Mapped[str] = mapped_column(String(300), nullable=False)
+    actividad_id: Mapped[int] = mapped_column(Integer, ForeignKey('actividad.id'), nullable=False)
+    actividad: Mapped["Actividad"] = relationship("Actividad", back_populates="fotos")
+
+# Routes
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -21,6 +114,71 @@ def members():
 @app.route("/metrics")
 def metrics():
     return render_template("metrics.html")
+
+# API endpoints
+@app.route("/api/members")
+def api_members():
+    session = Session()
+    try:
+        miembros = session.query(Miembro).all()
+        data = []
+        for m in miembros:
+            actividades = []
+            for a in m.actividades:
+                category_map = {
+                    'arte': 'Artistic',
+                    'deporte': 'Athletic',
+                    'tecnologia': 'Tech',
+                    'social': 'Social',
+                    'recreacion': 'Recreational',
+                    'otra': 'Other'
+                }
+                category = category_map.get(a.tipo.value, a.tipo.value)
+                actividades.append({
+                    'name': a.nombre,
+                    'category': category,
+                    'link': f'/activity/{a.id}'  # Placeholder link
+                })
+            data.append({
+                'name': m.nombre,
+                'type': m.tipo,
+                'email': m.email,
+                'activities': actividades
+            })
+        return jsonify(data)
+    finally:
+        session.close()
+
+@app.route("/api/metrics")
+def api_metrics():
+    session = Session()
+    try:
+        # Role counts
+        from sqlalchemy import func
+        role_query = session.query(Miembro.tipo, func.count(Miembro.id)).group_by(Miembro.tipo).all()
+        roles = {tipo: count for tipo, count in role_query}
+
+        # Activity counts
+        activity_query = session.query(Actividad.tipo, func.count(Actividad.id)).group_by(Actividad.tipo).all()
+        category_map = {
+            'arte': 'Artistic',
+            'deporte': 'Athletic',
+            'tecnologia': 'Tech',
+            'social': 'Social',
+            'recreacion': 'Recreational',
+            'otra': 'Other'
+        }
+        activities = {}
+        for tipo, count in activity_query:
+            category = category_map.get(tipo.value, tipo.value)
+            activities[category] = count
+
+        return jsonify({
+            'roles': roles,
+            'activities': activities
+        })
+    finally:
+        session.close()
 
 if __name__ == "__main__":
     app.run(debug=True)
