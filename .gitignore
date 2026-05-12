@@ -5,6 +5,9 @@ tarea_2/venv/
 tarea_2/__pycache__/
 tarea_2/database/__pycache__/
 
+tarea_2/static/uploads/*
+!tarea_2/static/uploads/
+!tarea_2/static/uploads/default.png
+
 venv/
 .venv/
-tarea_2/static/uploads/91167401a23e4c7e8505b509738b469b_IMG_20260511_171406.jpg
