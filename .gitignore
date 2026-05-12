@@ -3,5 +3,7 @@ readme.md
 tarea_2/instructions/
 tarea_2/venv/
 tarea_2/__pycache__/
+tarea_2/database/__pycache__/
+
 venv/
 .venv/
