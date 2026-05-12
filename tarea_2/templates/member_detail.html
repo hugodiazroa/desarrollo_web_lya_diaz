@@ -166,8 +166,8 @@
                 </div>
                 ${activity.description ? `<div class="activity-detail"><span class="info-label">Description:</span> ${activity.description}</div>` : ''}
               </div>
-              ${activity.image ? `<div class="activity-image">
-                <img src="${activity.image}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">
+              ${activity.images && activity.images.length > 0 ? `<div class="activity-image">
+                ${activity.images.map(img => `<img src="${img}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">`).join('')}
               </div>` : ''}
             </div>
           `).join('');

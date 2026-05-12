@@ -420,7 +420,7 @@ def api_member(member_id):
                 'start_time': a.hora_inicio,
                 'duration': a.duracion,
                 'description': a.descripcion,
-                'image': (a.fotos[0].ruta_archivo + a.fotos[0].nombre_archivo) if a.fotos else None
+                'images': [f.ruta_archivo + f.nombre_archivo for f in a.fotos] if a.fotos else []
             })
 
         return jsonify({
