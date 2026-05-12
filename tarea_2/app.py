@@ -289,8 +289,8 @@ def activity():
                     upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
                     upload.save(upload_path)
                     saved_files.append({
-                        'ruta_archivo': os.path.join('uploads', unique_name),
-                        'nombre_archivo': filename
+                        'ruta_archivo': '/static/uploads/',
+                        'nombre_archivo': unique_name
                     })
 
                 for schedule in valid_schedules:
