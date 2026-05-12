@@ -6,6 +6,35 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     <title>Members List</title>
+    <style> 
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        margin: 20px auto;
+        padding: 8px 12px;      
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      
+      .pagination button {
+        padding: 4px 8px;
+        font-size: 12px;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      #pageInfo {
+        font-size: 14px;
+        text-align: center;
+        min-width: 60px;
+        white-space: nowrap;
+      }
+    </style>
   </head>
   <body onload="loadMembers()">
   	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
@@ -31,8 +60,10 @@
       <tbody id="tbody"></tbody>
     </table>
 
-    <div id="pagination" style="margin-top: 20px; text-align: center;">
-      <button id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
+    <div id="pagination" class="pagination">
+      <button id="prevBtn" onclick="changePage(-1)" disabled>«</button>
       <span id="pageInfo"></span>
-      <button id="nextBtn" onclick="changePage(1)" disabled>Next</button>
+      <button id="nextBtn" onclick="changePage(1)" disabled>»</button>
     </div>
+  </body>
+</html>
