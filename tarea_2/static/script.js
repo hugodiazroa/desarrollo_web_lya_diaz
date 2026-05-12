@@ -383,11 +383,11 @@ function loadMetrics(){
           labels: ["Artistic", "Athletic", "Tech", "Social", "Recreational"],
           datasets: [{
             data: [
-              activityCounts.arte || 0,
-              activityCounts.deporte || 0,
-              activityCounts.tecnologia || 0,
-              activityCounts.social || 0,
-              activityCounts.recreacion || 0
+              activityCounts.Artistic || 0,
+              activityCounts.Athletic || 0,
+              activityCounts.Tech || 0,
+              activityCounts.Social || 0,
+              activityCounts.Recreational || 0
             ]
           }]
         }

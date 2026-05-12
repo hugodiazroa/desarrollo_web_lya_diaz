@@ -474,9 +474,9 @@ def api_metrics():
         category_map = {
             'arte': 'Artistic',
             'deporte': 'Athletic',
-            'tecnologia': 'Tech',
+            'tecnología': 'Tech',
             'social': 'Social',
-            'recreacion': 'Recreational',
+            'recreación': 'Recreational',
             'otra': 'Other'
         }
         activities = {}
