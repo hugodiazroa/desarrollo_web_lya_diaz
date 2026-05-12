@@ -5,9 +5,5 @@ tarea_2/venv/
 tarea_2/__pycache__/
 tarea_2/database/__pycache__/
 
-tarea_2/static/uploads/*
-!tarea_2/static/uploads/
-!tarea_2/static/uploads/default.png
-
 venv/
 .venv/

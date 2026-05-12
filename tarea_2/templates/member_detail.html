@@ -37,6 +37,20 @@
         margin: 15px 0;
         border-radius: 5px;
         background-color: #000000;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .activity-text {
+        flex: 1;
+      }
+      .activity-image {
+        margin-left: 20px;
+      }
+      .activity-image img {
+        height: 5em;
+        width: auto;
+        cursor: pointer;
       }
       .activity-title {
         font-size: 1.2em;
@@ -136,20 +150,25 @@
         if (member.activities && member.activities.length > 0) {
           activitiesContainer.innerHTML = member.activities.map(activity => `
             <div class="activity-card">
-              <div class="activity-title">${activity.name}</div>
-              <div class="activity-detail">
-                <span class="info-label">Category:</span> ${activity.category}
+              <div class="activity-text">
+                <div class="activity-title">${activity.name}</div>
+                <div class="activity-detail">
+                  <span class="info-label">Category:</span> ${activity.category}
+                </div>
+                <div class="activity-detail">
+                  <span class="info-label">Day:</span> ${activity.day}
+                </div>
+                <div class="activity-detail">
+                  <span class="info-label">Start Time:</span> ${activity.start_time}
+                </div>
+                <div class="activity-detail">
+                  <span class="info-label">Duration:</span> ${activity.duration} minutes
+                </div>
+                ${activity.description ? `<div class="activity-detail"><span class="info-label">Description:</span> ${activity.description}</div>` : ''}
               </div>
-              <div class="activity-detail">
-                <span class="info-label">Day:</span> ${activity.day}
-              </div>
-              <div class="activity-detail">
-                <span class="info-label">Start Time:</span> ${activity.start_time}
-              </div>
-              <div class="activity-detail">
-                <span class="info-label">Duration:</span> ${activity.duration} minutes
-              </div>
-              ${activity.description ? `<div class="activity-detail"><span class="info-label">Description:</span> ${activity.description}</div>` : ''}
+              ${activity.image ? `<div class="activity-image">
+                <img src="${activity.image}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">
+              </div>` : ''}
             </div>
           `).join('');
         } else {
