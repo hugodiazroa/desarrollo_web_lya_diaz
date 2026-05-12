@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <title>Register Member</title>
+  </head>
+  <body>
+  	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav><a href="index.html">Home</a></nav>
+    <h2>Register Member</h2>
+    <form onsubmit="return validateRegister()">
+      <input id="name" placeholder="Name *">
+      <input id="email" placeholder="Email *">
+      <input id="phone" placeholder="Phone *">
+      <select id="type" onchange="updateExtra()">
+        <option value="">Select Type *</option>
+        <option value="student_undergrad">Undergrad</option>
+        <option value="student_grad">Graduate</option>
+        <option value="staff">Staff</option>
+        <option value="faculty">Faculty</option>
+      </select>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
