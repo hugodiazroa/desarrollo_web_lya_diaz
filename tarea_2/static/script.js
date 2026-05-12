@@ -1,6 +1,9 @@
 function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
 function isURL(v){return /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/.test(v);}
 
+let currentPage = 1;
+let totalPages = 1;
+
 function validateRegister(){
   let name = document.getElementById("name").value;
   let email = document.getElementById("email").value;
@@ -29,7 +32,7 @@ function updateExtra(){
   else label.innerText="Department *";
 }
 
-function loadMembers(){
+function loadMembers(page = currentPage){
   fetch('/api/members')
     .then(response => response.json())
     .then(data => {
@@ -39,25 +42,50 @@ function loadMembers(){
       let filtered = filter ? data.filter(d=>d.type===filter) : data;
       filtered.sort((a,b)=> a[sort].localeCompare(b[sort]));
 
+      totalPages = Math.ceil(filtered.length / 10);
+      currentPage = page;
+      if(currentPage < 1) currentPage = 1;
+      if(currentPage > totalPages) currentPage = totalPages;
+
+      let start = (currentPage - 1) * 10;
+      let end = start + 10;
+      let pageData = filtered.slice(start, end);
+
       let tbody = document.getElementById("tbody");
       tbody.innerHTML="";
 
-      filtered.forEach((d, index)=>{
+      pageData.forEach((d)=>{
         tbody.innerHTML += `
-          <tr onclick="toggleActivities(${index})" style="cursor:pointer;">
+          <tr onclick="window.location.href='/members/${d.id}'" style="cursor:pointer;">
             <td>${d.name}</td>
             <td>${d.type}</td>
             <td>${d.email}</td>
           </tr>
-          <tr id="activities-${index}" style="display:none;">
-            <td colspan="3">${renderActivities(d.activities)}</td>
-          </tr>
         `;
       });
 
+      updatePaginationControls();
       window._members = filtered; // store globally for access
     })
     .catch(error => console.error('Error loading members:', error));
+}
+
+function updatePaginationControls(){
+  let prevBtn = document.getElementById("prevBtn");
+  let nextBtn = document.getElementById("nextBtn");
+  let pageInfo = document.getElementById("pageInfo");
+
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= totalPages;
+
+  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+}
+
+function changePage(direction){
+  let newPage = currentPage + direction;
+  if(newPage >= 1 && newPage <= totalPages){
+    loadMembers(newPage);
+  }
 }
 
 function renderActivities(activities){

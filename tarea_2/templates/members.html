@@ -12,7 +12,7 @@
     <nav><a href="{{ url_for('index') }}">Home</a></nav>
 
     <h3>Filter by:</h3>
-    <select id="filter" onchange="loadMembers()">
+    <select id="filter" onchange="currentPage=1; loadMembers()">
       <option value="">All</option>
       <option value="student_undergrad">Undergrad</option>
       <option value="student_grad">Graduate</option>
@@ -21,7 +21,7 @@
     </select>
 
     <h3>Sort by:</h3>
-    <select id="sort" onchange="loadMembers()">
+    <select id="sort" onchange="currentPage=1; loadMembers()">
       <option value="name">Name</option>
       <option value="email">Email</option>
     </select>
@@ -30,5 +30,9 @@
       <thead><tr><th>Name</th><th>Type</th><th>Email</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
-  </body>
-</html>
+
+    <div id="pagination" style="margin-top: 20px; text-align: center;">
+      <button id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn" onclick="changePage(1)" disabled>Next</button>
+    </div>

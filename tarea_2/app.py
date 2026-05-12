@@ -115,6 +115,10 @@ def members():
 def metrics():
     return render_template("metrics.html")
 
+@app.route("/members/<int:member_id>")
+def member_detail(member_id):
+    return render_template("member_detail.html", member_id=member_id)
+
 # API endpoints
 @app.route("/api/members")
 def api_members():
@@ -137,15 +141,58 @@ def api_members():
                 actividades.append({
                     'name': a.nombre,
                     'category': category,
-                    'link': f'/activity/{a.id}'  # Placeholder link
+                    'link': f'/activity/{a.id}'  # Todo: change this to random links
                 })
             data.append({
+                'id': m.id,
                 'name': m.nombre,
                 'type': m.tipo,
                 'email': m.email,
                 'activities': actividades
             })
         return jsonify(data)
+    finally:
+        session.close()
+
+@app.route("/api/member/<int:member_id>")
+def api_member(member_id):
+    session = Session()
+    try:
+        miembro = session.query(Miembro).filter(Miembro.id == member_id).first()
+        if not miembro:
+            return jsonify({'error': 'Member not found'}), 404
+
+        actividades = []
+        for a in miembro.actividades:
+            category_map = {
+                'arte': 'Artistic',
+                'deporte': 'Athletic',
+                'tecnologia': 'Tech',
+                'social': 'Social',
+                'recreacion': 'Recreational',
+                'otra': 'Other'
+            }
+            category = category_map.get(a.tipo.value, a.tipo.value)
+            actividades.append({
+                'id': a.id,
+                'name': a.nombre,
+                'category': category,
+                'day': a.dia.value,
+                'start_time': a.hora_inicio,
+                'duration': a.duracion,
+                'description': a.descripcion
+            })
+
+        return jsonify({
+            'id': miembro.id,
+            'name': miembro.nombre,
+            'email': miembro.email,
+            'phone': miembro.telefono,
+            'type': miembro.tipo,
+            'registration_date': miembro.fecha_registro.isoformat(),
+            'comuna': miembro.comuna.nombre,
+            'activities': actividades
+        })
     finally:
         session.close()
 
