@@ -1,12 +1,12 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
 from datetime import datetime
 import enum
+import re
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# Database configuration
 DATABASE_URI = 'mysql+pymysql://cc5002:programacionweb@localhost:3306/tarea2'
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
@@ -14,7 +14,6 @@ Session = sessionmaker(bind=engine)
 class Base(DeclarativeBase):
     pass
 
-# Enums for actividad
 class DiaEnum(enum.Enum):
     lunes = 'lunes'
     martes = 'martes'
@@ -97,11 +96,78 @@ class Foto(Base):
 # Routes
 @app.route("/")
 def index():
-    return render_template("index.html")
+    message = request.args.get('message')
+    return render_template("index.html", message=message)
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    errors = []
+    form_data = {
+        'name': '',
+        'email': '',
+        'phone': '',
+        'type': '',
+        'region_id': '',
+        'comuna_id': ''
+    }
+
+    if request.method == "POST":
+        region_id = request.form.get('region', type=int)
+        comuna_id = request.form.get('comuna', type=int)
+        form_data.update({
+            'name': request.form.get('name', '').strip(),
+            'email': request.form.get('email', '').strip(),
+            'phone': request.form.get('phone', '').strip(),
+            'type': request.form.get('type', '').strip(),
+            'region_id': region_id if region_id is not None else '',
+            'comuna_id': comuna_id if comuna_id is not None else ''
+        })
+
+        if not form_data['name']:
+            errors.append('Name is required.')
+        if not form_data['email']:
+            errors.append('Email is required.')
+        elif not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', form_data['email']):
+            errors.append('Email must be valid.')
+        if not form_data['phone']:
+            errors.append('Phone is required.')
+        elif not re.match(r'^\+?\d{1,15}$', form_data['phone']):
+            errors.append('Phone must be up to 15 digits and may start with +.')
+        if not form_data['type']:
+            errors.append('Type is required.')
+        if region_id is None:
+            errors.append('Region is required.')
+        if comuna_id is None:
+            errors.append('Comuna is required.')
+
+        session = Session()
+        try:
+            comuna = None
+            if comuna_id is not None:
+                comuna = session.query(Comuna).filter(Comuna.id == comuna_id).first()
+                if not comuna:
+                    errors.append('Selected comuna is invalid.')
+                elif region_id is not None and comuna.region_id != region_id:
+                    errors.append('Selected comuna does not match the selected region.')
+
+            if not errors:
+                miembro = Miembro(
+                    nombre=form_data['name'],
+                    email=form_data['email'],
+                    telefono=form_data['phone'],
+                    tipo=form_data['type'],
+                    comuna_id=comuna_id
+                )
+                session.add(miembro)
+                session.commit()
+                return redirect(url_for('index', message='Member registered successfully'))
+        except Exception:
+            session.rollback()
+            errors.append('Unable to save registration. Please try again.')
+        finally:
+            session.close()
+
+    return render_template("register.html", errors=errors, form_data=form_data)
 
 @app.route("/activity")
 def activity():

@@ -11,24 +11,38 @@
   	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
     <nav><a href="{{ url_for('index') }}">Home</a></nav>
     <h2>Register Member</h2>
-    <form onsubmit="return validateRegister()">
-      <input id="name" placeholder="Name *">
-      <input id="email" placeholder="Email *">
-      <input id="phone" placeholder="Phone *">
-      <select id="type" onchange="updateExtra()">
+    {% if errors %}
+      <div class="errors" style="color:#b00; margin-bottom:1rem;">
+        <ul>
+          {% for error in errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <form action="{{ url_for('register') }}" method="post" onsubmit="return validateRegister()">
+      <input id="name" name="name" value="{{ form_data.name|default('') }}" placeholder="Name *">
+      <input id="email" name="email" value="{{ form_data.email|default('') }}" placeholder="Email *">
+      <input id="phone" name="phone" value="{{ form_data.phone|default('') }}" placeholder="Phone *">
+      <select id="type" name="type" onchange="updateExtra()">
         <option value="">Select Type *</option>
-        <option value="student_undergrad">Undergrad</option>
-        <option value="student_grad">Graduate</option>
-        <option value="staff">Staff</option>
-        <option value="faculty">Faculty</option>
+        <option value="student_undergrad" {% if form_data.type == 'student_undergrad' %}selected{% endif %}>Undergrad</option>
+        <option value="student_grad" {% if form_data.type == 'student_grad' %}selected{% endif %}>Graduate</option>
+        <option value="staff" {% if form_data.type == 'staff' %}selected{% endif %}>Staff</option>
+        <option value="faculty" {% if form_data.type == 'faculty' %}selected{% endif %}>Faculty</option>
       </select>
-      <select id="region">
+      <select id="region" name="region">
         <option value="">Select Region *</option>
       </select>
-      <select id="comuna" disabled>
+      <select id="comuna" name="comuna" disabled>
         <option value="">Select Comuna *</option>
       </select>
       <button type="submit">Submit</button>
     </form>
+    <script>
+      window.initialRegisterType = {{ form_data.type|default('')|tojson }};
+      window.initialRegisterRegionId = {{ form_data.region_id|default('')|tojson }};
+      window.initialRegisterComunaId = {{ form_data.comuna_id|default('')|tojson }};
+    </script>
   </body>
 </html>

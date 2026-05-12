@@ -29,8 +29,7 @@ function validateRegister(){
   setUser(name);
   renderUser();
 
-  alert("Registered!");
-  return false;
+  return true;
 }
 
 function updateExtra(){
@@ -55,6 +54,13 @@ function loadRegions(){
         option.textContent = region.nombre;
         regionSelect.appendChild(option);
       });
+
+      if(window.initialRegisterRegionId){
+        regionSelect.value = window.initialRegisterRegionId;
+        if(regionSelect.value) {
+          loadComunas(regionSelect.value);
+        }
+      }
     })
     .catch(error => console.error('Error loading regions:', error));
 }
@@ -80,6 +86,9 @@ function loadComunas(regionId){
         comunaSelect.appendChild(option);
       });
       comunaSelect.disabled = false;
+      if(window.initialRegisterComunaId){
+        comunaSelect.value = window.initialRegisterComunaId;
+      }
     })
     .catch(error => console.error('Error loading comunas:', error));
 }

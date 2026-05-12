@@ -16,5 +16,10 @@
       <a href="{{ url_for('metrics') }}">Metrics</a>
     </nav>
     <h1>Scheduler</h1>
+    {% if message %}
+      <div class="success-message" style="padding:0.75rem 1rem; border:1px solid #0a0; background:#e8f7e8; color:#060; margin-top:1rem; border-radius:4px;">
+        {{ message }}
+      </div>
+    {% endif %}
   </body>
 </html>
