@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
 from datetime import datetime
@@ -151,6 +151,28 @@ def api_members():
                 'activities': actividades
             })
         return jsonify(data)
+    finally:
+        session.close()
+
+@app.route("/api/regions")
+def api_regions():
+    session = Session()
+    try:
+        regions = session.query(Region).order_by(Region.nombre).all()
+        return jsonify([{'id': r.id, 'nombre': r.nombre} for r in regions])
+    finally:
+        session.close()
+
+@app.route("/api/comunas")
+def api_comunas():
+    region_id = request.args.get('region_id', type=int)
+    session = Session()
+    try:
+        query = session.query(Comuna)
+        if region_id is not None:
+            query = query.filter(Comuna.region_id == region_id)
+        comunas = query.order_by(Comuna.nombre).all()
+        return jsonify([{'id': c.id, 'nombre': c.nombre, 'region_id': c.region_id} for c in comunas])
     finally:
         session.close()
 

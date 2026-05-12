@@ -9,9 +9,17 @@ function validateRegister(){
   let email = document.getElementById("email").value;
   let type = document.getElementById("type").value;
   let phone = document.getElementById("phone").value;
+  let region = document.getElementById("region").value;
+  let comuna = document.getElementById("comuna").value;
 
-  if(!name || !email || !type || !phone){ alert("Required fields missing"); return false;}
-  if(!isEmail(email)){ alert("Invalid email"); return false;}
+  if(!name || !email || !type || !phone || !region || !comuna){
+    alert("Required fields missing");
+    return false;
+  }
+  if(!isEmail(email)){
+    alert("Invalid email");
+    return false;
+  }
 
   if(!/^\+?\d{1,15}$/.test(phone)){
     alert("Phone must be up to 15 digits, optionally starting with +");
@@ -28,8 +36,52 @@ function validateRegister(){
 function updateExtra(){
   let type = document.getElementById("type").value;
   let label = document.getElementById("extraLabel");
+  if(!label) return;
   if(type.includes("student")) label.innerText="Program *";
   else label.innerText="Department *";
+}
+
+function loadRegions(){
+  const regionSelect = document.getElementById("region");
+  if(!regionSelect) return;
+
+  fetch('/api/regions')
+    .then(response => response.json())
+    .then(regions => {
+      regionSelect.innerHTML = '<option value="">Select Region *</option>';
+      regions.forEach(region => {
+        const option = document.createElement('option');
+        option.value = region.id;
+        option.textContent = region.nombre;
+        regionSelect.appendChild(option);
+      });
+    })
+    .catch(error => console.error('Error loading regions:', error));
+}
+
+function loadComunas(regionId){
+  const comunaSelect = document.getElementById("comuna");
+  if(!comunaSelect) return;
+
+  if(!regionId){
+    comunaSelect.innerHTML = '<option value="">Select Comuna *</option>';
+    comunaSelect.disabled = true;
+    return;
+  }
+
+  fetch(`/api/comunas?region_id=${regionId}`)
+    .then(response => response.json())
+    .then(comunas => {
+      comunaSelect.innerHTML = '<option value="">Select Comuna *</option>';
+      comunas.forEach(comuna => {
+        const option = document.createElement('option');
+        option.value = comuna.id;
+        option.textContent = comuna.nombre;
+        comunaSelect.appendChild(option);
+      });
+      comunaSelect.disabled = false;
+    })
+    .catch(error => console.error('Error loading comunas:', error));
 }
 
 function loadMembers(page = currentPage){
@@ -321,4 +373,12 @@ window.addEventListener("load", () => {
   renderUser();
   toggleActivityAccess();
   fillActiveUser();
+
+  const regionSelect = document.getElementById("region");
+  if(regionSelect){
+    loadRegions();
+    regionSelect.addEventListener("change", function(){
+      loadComunas(this.value);
+    });
+  }
 });
