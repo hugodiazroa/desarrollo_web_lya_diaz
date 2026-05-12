@@ -4,8 +4,15 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker,
 from datetime import datetime
 import enum
 import re
+import os
+import json
+import uuid
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'uploads')
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 DATABASE_URI = 'mysql+pymysql://cc5002:programacionweb@localhost:3306/tarea2'
 engine = create_engine(DATABASE_URI)
@@ -169,9 +176,153 @@ def register():
 
     return render_template("register.html", errors=errors, form_data=form_data)
 
-@app.route("/activity")
+@app.route("/activity", methods=["GET", "POST"])
 def activity():
-    return render_template("activity.html")
+    errors = []
+    form_data = {
+        'activity_name': '',
+        'category': '',
+        'link': '',
+        'schedule_items': []
+    }
+
+    if request.method == "POST":
+        member_name = request.form.get('member_name', '').strip()
+        form_data.update({
+            'activity_name': request.form.get('activity_name', '').strip(),
+            'category': request.form.get('category', '').strip(),
+            'link': request.form.get('link', '').strip()
+        })
+
+        schedule_json = request.form.get('schedules', '[]')
+        try:
+            schedule_items = json.loads(schedule_json)
+            if not isinstance(schedule_items, list):
+                schedule_items = []
+        except json.JSONDecodeError:
+            schedule_items = []
+        form_data['schedule_items'] = schedule_items
+
+        if not member_name:
+            errors.append('Member must be registered to report an activity.')
+        if not form_data['activity_name']:
+            errors.append('Activity name is required.')
+        if not form_data['category']:
+            errors.append('Activity category is required.')
+        if not schedule_items:
+            errors.append('At least one schedule is required.')
+
+        category_map = {
+            'Artistic': 'arte',
+            'Athletic': 'deporte',
+            'Tech': 'tecnología',
+            'Social': 'social',
+            'Recreational': 'recreación'
+        }
+        day_map = {
+            'Monday': 'lunes',
+            'Tuesday': 'martes',
+            'Wednesday': 'miércoles',
+            'Thursday': 'jueves',
+            'Friday': 'viernes',
+            'Saturday': 'sábado',
+            'Sunday': 'domingo'
+        }
+
+        if form_data['category'] not in category_map:
+            errors.append('Invalid activity category.')
+
+        valid_schedules = []
+        for idx, item in enumerate(schedule_items, start=1):
+            if not isinstance(item, dict):
+                errors.append(f'Schedule entry {idx} is invalid.')
+                continue
+            day = item.get('day', '')
+            hour = item.get('hour', '')
+            minute = item.get('minute', '')
+            duration = item.get('duration', '')
+
+            if not day or not hour or not minute or not duration:
+                errors.append(f'Schedule entry {idx} must include day, hour, minute, and duration.')
+                continue
+            if day not in day_map:
+                errors.append(f'Schedule entry {idx} includes invalid day.')
+            if not hour.isdigit() or not (0 <= int(hour) <= 23):
+                errors.append(f'Schedule entry {idx} includes invalid hour.')
+            if not minute.isdigit() or not (0 <= int(minute) <= 59):
+                errors.append(f'Schedule entry {idx} includes invalid minute.')
+            if not str(duration).isdigit() or not (1 <= int(duration) <= 240):
+                errors.append(f'Schedule entry {idx} duration must be between 1 and 240 minutes.')
+
+            if not errors:
+                valid_schedules.append({
+                    'day': day_map[day],
+                    'hour': f"{int(hour):02d}:{int(minute):02d}",
+                    'duration': str(duration)
+                })
+
+        if form_data['link']:
+            if not re.match(r'^(https?:\/\/)?[\w-]+(\.[\w-]+)+([\/\w\- .?%&=]*)?$', form_data['link']):
+                errors.append('Activity link must be a valid URL.')
+
+        files = [f for f in request.files.getlist('photos') if f and f.filename]
+        if not files:
+            errors.append('At least one image or video file is required.')
+        elif len(files) > 8:
+            errors.append('You can upload at most 8 files.')
+
+        session = Session()
+        try:
+            miembro = None
+            if member_name and not errors:
+                miembro = session.query(Miembro).filter(Miembro.nombre == member_name).first()
+                if not miembro:
+                    errors.append('Registered member was not found.')
+
+            if not errors:
+                saved_files = []
+                for upload in files:
+                    filename = secure_filename(upload.filename)
+                    if not filename:
+                        continue
+                    unique_name = f"{uuid.uuid4().hex}_{filename}"
+                    upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                    upload.save(upload_path)
+                    saved_files.append({
+                        'ruta_archivo': os.path.join('uploads', unique_name),
+                        'nombre_archivo': filename
+                    })
+
+                for schedule in valid_schedules:
+                    actividad = Actividad(
+                        miembro_id=miembro.id,
+                        dia=schedule['day'],
+                        hora_inicio=schedule['hour'],
+                        duracion=schedule['duration'],
+                        tipo=category_map[form_data['category']],
+                        nombre=form_data['activity_name'],
+                        descripcion=None
+                    )
+                    session.add(actividad)
+                    session.flush()
+
+                    for saved in saved_files:
+                        foto = Foto(
+                            ruta_archivo=saved['ruta_archivo'],
+                            nombre_archivo=saved['nombre_archivo'],
+                            actividad_id=actividad.id
+                        )
+                        session.add(foto)
+
+                session.commit()
+                return redirect(url_for('index', message='Activity registered successfully'))
+        except Exception:
+            session.rollback()
+            errors.append('Unable to save activity registration. Please try again.')
+        finally:
+            session.close()
+
+    return render_template("activity.html", errors=errors, form_data=form_data, schedule_items=form_data['schedule_items'])
 
 @app.route("/members")
 def members():

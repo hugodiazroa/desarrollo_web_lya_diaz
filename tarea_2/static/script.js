@@ -167,7 +167,19 @@ function toggleActivities(index){
   row.style.display = row.style.display === "none" ? "table-row" : "none";
 }
 
-let schedules = [];
+let activityScheduleItems = [];
+
+function renderScheduleList(){
+  const list = document.getElementById("scheduleList");
+  const schedulesInput = document.getElementById("schedules");
+  if(!list || !schedulesInput) return;
+
+  list.innerHTML = "";
+  activityScheduleItems.forEach(item => {
+    list.innerHTML += `<li>${item.day} ${item.hour}:${item.minute} (${item.duration} min)</li>`;
+  });
+  schedulesInput.value = JSON.stringify(activityScheduleItems);
+}
 
 function addSchedule(){
   let day = document.getElementById("day").value;
@@ -185,11 +197,14 @@ function addSchedule(){
     return;
   }
 
-  let entry = `${day} ${hour}:${minute} (${duration} min)`;
-  schedules.push(entry);
+  activityScheduleItems.push({
+    day,
+    hour,
+    minute,
+    duration: duration.toString()
+  });
 
-  let list = document.getElementById("scheduleList");
-  list.innerHTML += `<li>${entry}</li>`;
+  renderScheduleList();
 }
 
 function validateActivity(){
@@ -212,7 +227,7 @@ function validateActivity(){
     return false;
   }
 
-  if(schedules.length === 0){
+  if(activityScheduleItems.length === 0){
     alert("At least one schedule is required");
     return false;
   }
@@ -236,7 +251,7 @@ function validateActivity(){
   }
 
   alert("Valid!");
-  return false;
+  return true;
 }
 
 function handleFileSelection(){
@@ -276,6 +291,7 @@ function handleSingleFile(input){
   if(input.files.length > 0 && input === inputs[inputs.length - 1]){
     const newInput = document.createElement("input");
     newInput.type = "file";
+    newInput.name = "photos";
     newInput.accept = "image/*,video/*";
     newInput.onchange = function(){ handleSingleFile(this); };
 
@@ -327,9 +343,13 @@ function toggleActivityAccess(){
 function fillActiveUser(){
   const user = localStorage.getItem("activeUser");
   const el = document.getElementById("activeUserName");
+  const memberInput = document.getElementById("member_name");
 
   if(el && user){
     el.textContent = user;
+  }
+  if(memberInput && user){
+    memberInput.value = user;
   }
 }
 

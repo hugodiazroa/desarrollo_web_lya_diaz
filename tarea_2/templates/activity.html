@@ -15,17 +15,29 @@
       <p>You can not add activities if you are not registered</p>
     </div>
     <div id="activityForm">
-      <form onsubmit="return validateActivity()">
+      {% if errors %}
+        <div class="errors" style="color:#b00; margin-bottom:1rem;">
+          <ul>
+            {% for error in errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      <form id="activityRegistrationForm" action="{{ url_for('activity') }}" method="post" enctype="multipart/form-data" onsubmit="return validateActivity()">
+        <input type="hidden" id="member_name" name="member_name" value="">
+        <input type="hidden" id="schedules" name="schedules" value='{{ schedule_items|tojson|default('[]') }}'>
         <p>Owner of activity: <strong id="activeUserName"></strong></p>
         <h3>Name of activity: *</h3>
-          <input id="activityName" placeholder="Activity Name *">
+          <input id="activityName" name="activity_name" value="{{ form_data.activity_name|default('') }}" placeholder="Activity Name *">
         <h3>Category: *</h3>
-        <select>
-          <option>Artistic</option>
-          <option>Athletic</option>
-          <option>Tech</option>
-          <option>Social</option>
-          <option>Recreational</option>
+        <select id="category" name="category">
+          <option value="">Select Category *</option>
+          <option value="Artistic" {% if form_data.category == 'Artistic' %}selected{% endif %}>Artistic</option>
+          <option value="Athletic" {% if form_data.category == 'Athletic' %}selected{% endif %}>Athletic</option>
+          <option value="Tech" {% if form_data.category == 'Tech' %}selected{% endif %}>Tech</option>
+          <option value="Social" {% if form_data.category == 'Social' %}selected{% endif %}>Social</option>
+          <option value="Recreational" {% if form_data.category == 'Recreational' %}selected{% endif %}>Recreational</option>
         </select>
         <h3>Schedule: *</h3>
           <div class="schedule-row">
@@ -56,27 +68,43 @@
         <ul id="scheduleList"></ul>
         <h3>Image or video about activity: *</h3>
           <div id="fileContainer">
-            <input type="file" accept="image/*,video/*" onchange="handleSingleFile(this)">
+            <input type="file" name="photos" accept="image/*,video/*" onchange="handleSingleFile(this)">
           </div>
           <div id="fileInfo">0 / 8 files selected</div>
         <h3>Link of activity: *</h3>
-          <input id="link" placeholder="Related Link *">
+          <input id="link" name="link" value="{{ form_data.link|default('') }}" placeholder="Related Link *">
         <button type="submit">Submit</button>
       </form>
     </div>
     <script>
+      window.initialScheduleItems = {{ schedule_items|tojson|default('[]') }};
 
-    window.onload = function(){
-      const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-      const daySelect = document.getElementById("day");
-      days.forEach(d=> daySelect.innerHTML += `<option>${d}</option>`);
+      function renderScheduleList(){
+        const list = document.getElementById("scheduleList");
+        const schedulesInput = document.getElementById("schedules");
 
-      const hour = document.getElementById("hour");
-      for(let i=0;i<24;i++) hour.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+        if(!list || !schedulesInput) return;
+        list.innerHTML = "";
+        activityScheduleItems.forEach(item => {
+          list.innerHTML += `<li>${item.day} ${item.hour}:${item.minute} (${item.duration} min)</li>`;
+        });
+        schedulesInput.value = JSON.stringify(activityScheduleItems);
+      }
 
-      const minute = document.getElementById("minute");
-      for(let i=0;i<60;i++) minute.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
-    }
+      window.onload = function(){
+        const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+        const daySelect = document.getElementById("day");
+        days.forEach(d=> daySelect.innerHTML += `<option>${d}</option>`);
+
+        const hour = document.getElementById("hour");
+        for(let i=0;i<24;i++) hour.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+
+        const minute = document.getElementById("minute");
+        for(let i=0;i<60;i++) minute.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+
+        activityScheduleItems = window.initialScheduleItems || [];
+        renderScheduleList();
+      }
     </script>
 
   </body>
