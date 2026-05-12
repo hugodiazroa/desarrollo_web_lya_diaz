@@ -21,5 +21,26 @@
         {{ message }}
       </div>
     {% endif %}
+    <h2>Recent Members</h2>
+    <table style="margin: 1rem;">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Email</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in recent_members %}
+        <tr>
+          <td>{{ member.name }}</td>
+          <td>{{ member.type }}</td>
+          <td>{{ member.email }}</td>
+          <td>{{ member.registered }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </body>
 </html>

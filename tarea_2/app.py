@@ -103,8 +103,32 @@ class Foto(Base):
 # Routes
 @app.route("/")
 def index():
-    message = request.args.get('message')
-    return render_template("index.html", message=message)
+    session = Session()
+    try:
+        # Get last 5 registered members
+        miembros = session.query(Miembro).order_by(Miembro.fecha_registro.desc()).limit(5).all()
+        recent_members = []
+        now = datetime.utcnow()
+        for m in miembros:
+            delta = now - m.fecha_registro
+            days = delta.days
+            if days == 0:
+                registered = "today"
+            elif days >= 365:
+                years = days // 365
+                registered = f"{years} year{'s' if years > 1 else ''} ago"
+            else:
+                registered = f"{days} day{'s' if days > 1 else ''} ago"
+            recent_members.append({
+                'name': m.nombre,
+                'type': m.tipo,
+                'email': m.email,
+                'registered': registered
+            })
+        message = request.args.get('message')
+        return render_template("index.html", message=message, recent_members=recent_members)
+    finally:
+        session.close()
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
