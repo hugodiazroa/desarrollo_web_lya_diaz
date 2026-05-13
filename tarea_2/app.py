@@ -234,6 +234,8 @@ def activity():
             errors.append('Activity name is required.')
         if not form_data['category']:
             errors.append('Activity category is required.')
+        if len(form_data['description']) > 500:
+            errors.append('Description must be 500 characters or fewer.')
         if not schedule_items:
             errors.append('At least one schedule is required.')
 

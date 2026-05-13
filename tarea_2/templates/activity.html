@@ -78,7 +78,7 @@
           </div>
           <div id="fileInfo">0 / 8 files selected</div>
         <h3>Description of activity:</h3>
-          <textarea id="description" name="description" placeholder="Optional description (max 500 characters)">{{ form_data.description|default('') }}</textarea>
+          <textarea id="description" name="description" maxlength="500" placeholder="Optional description (max 500 characters)">{{ form_data.description|default('') }}</textarea>
         <button type="submit">Submit</button>
       </form>
     </div>

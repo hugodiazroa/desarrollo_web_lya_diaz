@@ -214,8 +214,15 @@ function validateActivity(){
   const MAX_SIZE = 100 * 1024 * 1024; // 100MB
   const MAX_FILES = 8;
 
+  let description = document.getElementById("description").value || "";
+
   if(!name || !activityName || files.length === 0){
     alert("Required fields missing");
+    return false;
+  }
+
+  if(description.length > 500){
+    alert("Description must be 500 characters or fewer");
     return false;
   }
 

@@ -19,7 +19,7 @@ form {
   max-width: 500px;
 }
 
-input, select, button {
+input, select, textarea, button {
   display: block;
   margin: 8px 0;
   width: 100%;
@@ -27,6 +27,11 @@ input, select, button {
   background-color: #444;
   color: #fff;
   border: 1px solid #777;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
 }
 
 input::placeholder {
