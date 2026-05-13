@@ -120,6 +120,7 @@ def index():
             else:
                 registered = f"{days} day{'s' if days > 1 else ''} ago"
             recent_members.append({
+                'id': m.id,
                 'name': m.nombre,
                 'type': m.tipo,
                 'email': m.email,
