@@ -60,6 +60,10 @@
       .activity-detail {
         margin: 5px 0;
       }
+      .description-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
 
       .no-activities {
         font-style: italic;
@@ -136,6 +140,14 @@
           });
       }
 
+      function wrapDescription(text, maxLength) {
+        let result = '';
+        for (let i = 0; i < text.length; i += maxLength) {
+          result += text.slice(i, i + maxLength) + '<br>';
+        }
+        return result;
+      }
+
       function displayMemberDetail(member) {
         document.getElementById('memberName').textContent = member.name;
         document.getElementById('memberEmail').textContent = member.email;
@@ -164,7 +176,7 @@
                 <div class="activity-detail">
                   <span class="info-label">Duration:</span> ${activity.duration} minutes
                 </div>
-                ${activity.description ? `<div class="activity-detail"><span class="info-label">Description:</span> ${activity.description}</div>` : ''}
+                ${activity.description ? `<div class="activity-detail"><span class="info-label">Description:</span><br><div class="description-text">${wrapDescription(activity.description, 40)}</div></div>` : ''}
               </div>
               ${activity.images && activity.images.length > 0 ? `<div class="activity-image">
                 ${activity.images.map(img => `<img src="${img}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">`).join('')}
