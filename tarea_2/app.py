@@ -182,6 +182,10 @@ def register():
                 elif region_id is not None and comuna.region_id != region_id:
                     errors.append('Selected comuna does not match the selected region.')
 
+            existing_member = session.query(Miembro).filter(Miembro.email == form_data['email']).first()
+            if existing_member:
+                errors.append('Email is already registered.')
+
             if not errors:
                 miembro = Miembro(
                     nombre=form_data['name'],
