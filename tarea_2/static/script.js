@@ -1,5 +1,4 @@
 function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
-function isURL(v){return /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/.test(v);}
 
 let currentPage = 1;
 let totalPages = 1;
@@ -156,8 +155,7 @@ function renderActivities(activities){
 
   return activities.map(a=>{
     return `
-      <strong>${a.name}</strong> (${a.category}) - 
-      <a href="${a.link}" target="_blank">${a.link}</a>
+      <strong>${a.name}</strong> (${a.category})
     `;
   }).join("<br>");
 }
@@ -212,12 +210,11 @@ function validateActivity(){
   let activityName = document.getElementById("activityName").value;
   let inputs = document.querySelectorAll("#fileContainer input[type='file']");
   let files = Array.from(inputs).flatMap(i => Array.from(i.files));
-  let link = document.getElementById("link").value;
 
   const MAX_SIZE = 100 * 1024 * 1024; // 100MB
   const MAX_FILES = 8;
 
-  if(!name || !activityName || files.length === 0 || !link){
+  if(!name || !activityName || files.length === 0){
     alert("Required fields missing");
     return false;
   }
@@ -243,11 +240,6 @@ function validateActivity(){
       alert("Each file must be less than 100 MB");
       return false;
     }
-  }
-
-  if(!isURL(link)){
-    alert("Invalid URL");
-    return false;
   }
 
   alert("Valid!");

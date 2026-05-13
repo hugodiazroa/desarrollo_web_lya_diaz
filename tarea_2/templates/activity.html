@@ -77,8 +77,8 @@
             <input type="file" name="photos" accept="image/*,video/*" onchange="handleSingleFile(this)">
           </div>
           <div id="fileInfo">0 / 8 files selected</div>
-        <h3>Link of activity: *</h3>
-          <input id="link" name="link" value="{{ form_data.link|default('') }}" placeholder="Related Link *">
+        <h3>Description of activity:</h3>
+          <textarea id="description" name="description" placeholder="Optional description (max 500 characters)">{{ form_data.description|default('') }}</textarea>
         <button type="submit">Submit</button>
       </form>
     </div>

@@ -207,7 +207,7 @@ def activity():
     form_data = {
         'activity_name': '',
         'category': '',
-        'link': '',
+        'description': '',
         'schedule_items': []
     }
 
@@ -216,7 +216,7 @@ def activity():
         form_data.update({
             'activity_name': request.form.get('activity_name', '').strip(),
             'category': request.form.get('category', '').strip(),
-            'link': request.form.get('link', '').strip()
+            'description': request.form.get('description', '').strip()
         })
 
         schedule_json = request.form.get('schedules', '[]')
@@ -286,10 +286,6 @@ def activity():
                     'duration': str(duration)
                 })
 
-        if form_data['link']:
-            if not re.match(r'^(https?:\/\/)?[\w-]+(\.[\w-]+)+([\/\w\- .?%&=]*)?$', form_data['link']):
-                errors.append('Activity link must be a valid URL.')
-
         files = [f for f in request.files.getlist('photos') if f and f.filename]
         if not files:
             errors.append('At least one image or video file is required.')
@@ -326,7 +322,7 @@ def activity():
                         duracion=schedule['duration'],
                         tipo=category_map[form_data['category']],
                         nombre=form_data['activity_name'],
-                        descripcion=None
+                        descripcion=form_data['description'] or None
                     )
                     session.add(actividad)
                     session.flush()
@@ -382,8 +378,7 @@ def api_members():
                 category = category_map.get(a.tipo.value, a.tipo.value)
                 actividades.append({
                     'name': a.nombre,
-                    'category': category,
-                    'link': f'/activity/{a.id}'  # Todo: change this to random links
+                    'category': category
                 })
             data.append({
                 'id': m.id,
