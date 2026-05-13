@@ -300,7 +300,7 @@ def activity():
             if member_name and not errors:
                 miembro = session.query(Miembro).filter(Miembro.nombre == member_name).first()
                 if not miembro:
-                    errors.append('Registered member was not found.')
+                    errors.append('Registered user not in database')
 
             if not errors:
                 saved_files = []
@@ -455,6 +455,18 @@ def api_member(member_id):
             'comuna': miembro.comuna.nombre,
             'activities': actividades
         })
+    finally:
+        session.close()
+
+@app.route("/api/check-member/<member_name>")
+def api_check_member(member_name):
+    session = Session()
+    try:
+        miembro = session.query(Miembro).filter(Miembro.nombre == member_name).first()
+        if miembro:
+            return jsonify({'exists': True, 'id': miembro.id})
+        else:
+            return jsonify({'exists': False}), 404
     finally:
         session.close()
 

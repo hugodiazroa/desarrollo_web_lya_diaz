@@ -352,6 +352,46 @@ function fillActiveUser(){
   }
 }
 
+function validateMemberInDatabase(){
+  const user = localStorage.getItem("activeUser");
+  if(!user) return; // No user logged in
+  
+  fetch(`/api/check-member/${encodeURIComponent(user)}`)
+    .then(response => {
+      if(response.status === 404){
+        // User not in database
+        showErrorAndLogout("registered user not in database");
+        return;
+      }
+      return response.json();
+    })
+    .catch(error => {
+      console.error('Error validating member:', error);
+    });
+}
+
+function showErrorAndLogout(errorMessage){
+  // Display error
+  const errorDiv = document.createElement("div");
+  errorDiv.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; border:2px solid red; padding:20px; text-align:center; z-index:9999; border-radius:5px;";
+  errorDiv.innerHTML = `
+    <h2 style="color:red; margin-top:0;">Error</h2>
+    <p>${errorMessage}</p>
+    <button onclick="logout()" style="padding:10px 20px; background:#b00; color:white; border:none; border-radius:3px; cursor:pointer;">Log Out</button>
+  `;
+  document.body.appendChild(errorDiv);
+  
+  // Disable interaction with page
+  document.body.style.pointerEvents = "none";
+  errorDiv.style.pointerEvents = "auto";
+  
+  // Also hide the form
+  const form = document.getElementById("activityForm");
+  if(form) form.style.display = "none";
+  const msg = document.getElementById("activityMessage");
+  if(msg) msg.style.display = "none";
+}
+
 function loadMetrics(){
   fetch('/api/metrics')
     .then(response => response.json())
@@ -401,6 +441,11 @@ window.addEventListener("load", () => {
   renderUser();
   toggleActivityAccess();
   fillActiveUser();
+  
+  // Validate member exists in database on activity page
+  if(document.getElementById("activityForm")){
+    validateMemberInDatabase();
+  }
 
   const regionSelect = document.getElementById("region");
   if(regionSelect){
