@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Report Activity</title>
+  </head>
+  <body>
+  	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('register') }}">Register</a>
+      <a href="{{ url_for('activity') }}">Activity</a>
+      <a href="{{ url_for('members') }}">Members</a>
+      <a href="{{ url_for('metrics') }}">Metrics</a>
+    </nav>
+    <h2>Report Activity</h2>
+    <div id="activityMessage" style="display:none;">
+      <p>You can not add activities if you are not registered</p>
+    </div>
+    <div id="activityForm">
+      {% if errors %}
+        <div class="errors" style="color:#b00; margin-bottom:1rem;">
+          <ul>
+            {% for error in errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      <form id="activityRegistrationForm" action="{{ url_for('activity') }}" method="post" enctype="multipart/form-data" onsubmit="return validateActivity()">
+        <input type="hidden" id="member_name" name="member_name" value="">
+        <input type="hidden" id="schedules" name="schedules" value='{{ schedule_items|tojson|default('[]') }}'>
+        <p>Owner of activity: <strong id="activeUserName"></strong></p>
+        <h3>Name of activity: *</h3>
+          <input id="activityName" name="activity_name" value="{{ form_data.activity_name|default('') }}" placeholder="Activity Name *">
+        <h3>Category: *</h3>
+        <select id="category" name="category">
+          <option value="">Select Category *</option>
+          <option value="Artistic" {% if form_data.category == 'Artistic' %}selected{% endif %}>Artistic</option>
+          <option value="Athletic" {% if form_data.category == 'Athletic' %}selected{% endif %}>Athletic</option>
+          <option value="Tech" {% if form_data.category == 'Tech' %}selected{% endif %}>Tech</option>
+          <option value="Social" {% if form_data.category == 'Social' %}selected{% endif %}>Social</option>
+          <option value="Recreational" {% if form_data.category == 'Recreational' %}selected{% endif %}>Recreational</option>
+        </select>
+        <h3>Schedule: *</h3>
+          <div class="schedule-row">
+            <div class="field">
+              <label for="day">Day</label>
+              <select id="day"></select>
+            </div>
+
+            <div class="field">
+              <label for="hour">Hour</label>
+              <select id="hour"></select>
+            </div>
+
+            <div class="field">
+              <label for="minute">Minute</label>
+              <select id="minute"></select>
+            </div>
+
+            <div class="field">
+              <label for="duration">Duration</label>
+              <input id="duration" type="number" placeholder="min (max 240)">
+            </div>
+
+            <div class="field">
+              <button type="button" onclick="addSchedule()">Add</button>
+            </div>
+          </div>
+        <ul id="scheduleList"></ul>
+        <h3>Image or video about activity: *</h3>
+          <div id="fileContainer">
+            <input type="file" name="photos" accept="image/*,video/*" onchange="handleSingleFile(this)">
+          </div>
+          <div id="fileInfo">0 / 8 files selected</div>
+        <h3>Description of activity:</h3>
+          <textarea id="description" name="description" maxlength="500" placeholder="Optional description (max 500 characters)">{{ form_data.description|default('') }}</textarea>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+    <script>
+      window.initialScheduleItems = {{ schedule_items|tojson|default('[]') }};
+
+      function renderScheduleList(){
+        const list = document.getElementById("scheduleList");
+        const schedulesInput = document.getElementById("schedules");
+
+        if(!list || !schedulesInput) return;
+        list.innerHTML = "";
+        activityScheduleItems.forEach(item => {
+          list.innerHTML += `<li>${item.day} ${item.hour}:${item.minute} (${item.duration} min)</li>`;
+        });
+        schedulesInput.value = JSON.stringify(activityScheduleItems);
+      }
+
+      window.onload = function(){
+        const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+        const daySelect = document.getElementById("day");
+        days.forEach(d=> daySelect.innerHTML += `<option>${d}</option>`);
+
+        const hour = document.getElementById("hour");
+        for(let i=0;i<24;i++) hour.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+
+        const minute = document.getElementById("minute");
+        for(let i=0;i<60;i++) minute.innerHTML += `<option>${String(i).padStart(2,'0')}</option>`;
+
+        activityScheduleItems = window.initialScheduleItems || [];
+        renderScheduleList();
+      }
+    </script>
+
+  </body>
+</html>
