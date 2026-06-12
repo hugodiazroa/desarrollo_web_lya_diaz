@@ -62,6 +62,53 @@
         border-radius: 5px;
         background-color: #ffebee;
       }
+      .comment-section {
+        margin-top: 30px;
+      }
+      .comment-list {
+        margin-top: 15px;
+        list-style: none;
+        padding: 0;
+      }
+      .comment-item {
+        border: 1px solid #000;
+        padding: 12px;
+        margin-bottom: 12px;
+        background-color: #000;
+      }
+      .comment-item .comment-header {
+        font-weight: bold;
+        margin-bottom: 4px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+      .comment-item .comment-body {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+      }
+      .comment-form label {
+        display: block;
+        margin: 10px 0 4px;
+      }
+      .comment-form input,
+      .comment-form textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #999;
+        box-sizing: border-box;
+      }
+      .comment-form button {
+        margin-top: 12px;
+        padding: 10px 16px;
+        border: none;
+        background-color: #666;
+        color: white;
+        cursor: pointer;
+      }
+      .comment-form button:hover {
+        background-color: #005fa3;
+      }
     </style>
   </head>
   <body>
@@ -103,6 +150,24 @@
         <h3>Media</h3>
         <div id="mediaContainer" class="activity-images"></div>
       </div>
+
+      <div class="comment-section">
+        <h3>Add comment</h3>
+        <div id="commentFormErrors" class="error" style="display:none;"></div>
+        <form id="commentForm" class="comment-form">
+          <label for="commentName">Your name</label>
+          <input id="commentName" name="name" type="text" required minlength="3" maxlength="80" placeholder="Name" />
+
+          <label for="commentText">Comment</label>
+          <textarea id="commentText" name="text" rows="4" cols="50" required minlength="5" placeholder="Write your comment"></textarea>
+
+          <button type="submit">Add Comment</button>
+        </form>
+
+        <h3>Comments</h3>
+
+        <ul id="commentsList" class="comment-list"></ul>
+      </div>
     </div>
 
     <script>
@@ -143,9 +208,92 @@
           mediaContainer.innerHTML = '<div class="no-images">No media uploaded for this activity.</div>';
         }
 
+        displayComments(activity.comments || []);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('content').style.display = 'block';
       }
+
+      function displayComments(comments) {
+        const commentsList = document.getElementById('commentsList');
+        if (!comments || comments.length === 0) {
+          commentsList.innerHTML = '<li class="comment-item">No comments yet. Be the first to add one.</li>';
+          return;
+        }
+
+        commentsList.innerHTML = comments.map(comment => `
+          <li class="comment-item">
+            <div class="comment-header">${comment.name} · ${new Date(comment.date).toLocaleString()}</div>
+            <div class="comment-body">${escapeHtml(comment.text)}</div>
+          </li>
+        `).join('');
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function handleCommentFormSubmit(event) {
+        event.preventDefault();
+        const activityId = {{ activity_id }};
+        const nameField = document.getElementById('commentName');
+        const textField = document.getElementById('commentText');
+        const errorContainer = document.getElementById('commentFormErrors');
+
+        const name = nameField.value.trim();
+        const text = textField.value.trim();
+        const errors = [];
+
+        if (!name) {
+          errors.push('Your name is required.');
+        } else if (name.length < 3 || name.length > 80) {
+          errors.push('Your name must be between 3 and 80 characters.');
+        }
+
+        if (!text) {
+          errors.push('Comment text is required.');
+        } else if (text.length < 5) {
+          errors.push('Comment text must be at least 5 characters long.');
+        }
+
+        if (errors.length > 0) {
+          errorContainer.style.display = 'block';
+          errorContainer.innerHTML = errors.map(error => `<div>${escapeHtml(error)}</div>`).join('');
+          return;
+        }
+
+        fetch(`/api/activity/${activityId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ name, text })
+        })
+          .then(response => response.json().then(data => ({ status: response.status, body: data })))
+          .then(({ status, body }) => {
+            if (status === 201) {
+              errorContainer.style.display = 'none';
+              nameField.value = '';
+              textField.value = '';
+              loadActivityDetail(activityId);
+            } else {
+              const errorMessages = body.errors || ['Unable to add comment.'];
+              errorContainer.innerHTML = errorMessages.map(error => `<div>${escapeHtml(error)}</div>`).join('');
+              errorContainer.style.display = 'block';
+            }
+          })
+          .catch(() => {
+            errorContainer.innerHTML = '<div>Unable to submit comment. Please try again.</div>';
+            errorContainer.style.display = 'block';
+          });
+      }
+
+      document.getElementById('commentForm').addEventListener('submit', handleCommentFormSubmit);
     </script>
   </body>
 </html>

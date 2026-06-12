@@ -91,6 +91,7 @@ class Actividad(Base):
     descripcion: Mapped[str] = mapped_column(Text(500), nullable=True)
     miembro: Mapped["Miembro"] = relationship("Miembro", back_populates="actividades")
     fotos: Mapped[list["Foto"]] = relationship("Foto", back_populates="actividad")
+    comentarios: Mapped[list["Comentario"]] = relationship("Comentario", back_populates="actividad")
 
 class Foto(Base):
     __tablename__ = 'foto'
@@ -99,6 +100,15 @@ class Foto(Base):
     nombre_archivo: Mapped[str] = mapped_column(String(300), nullable=False)
     actividad_id: Mapped[int] = mapped_column(Integer, ForeignKey('actividad.id'), nullable=False)
     actividad: Mapped["Actividad"] = relationship("Actividad", back_populates="fotos")
+
+class Comentario(Base):
+    __tablename__ = 'comentario'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(String(80), nullable=False)
+    texto: Mapped[str] = mapped_column(String(300), nullable=False)
+    fecha: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    actividad_id: Mapped[int] = mapped_column(Integer, ForeignKey('actividad.id'), nullable=False)
+    actividad: Mapped["Actividad"] = relationship("Actividad", back_populates="comentarios")
 
 # Routes
 @app.route("/")
@@ -386,6 +396,15 @@ def api_activity(activity_id):
         category = category_map.get(actividad.tipo.value, actividad.tipo.value)
 
         images = [f.ruta_archivo + f.nombre_archivo for f in actividad.fotos] if actividad.fotos else []
+        comentarios = [
+            {
+                'id': c.id,
+                'name': c.nombre,
+                'text': c.texto,
+                'date': c.fecha.isoformat()
+            }
+            for c in sorted(actividad.comentarios, key=lambda c: c.fecha, reverse=True)
+        ]
 
         return jsonify({
             'id': actividad.id,
@@ -400,8 +419,57 @@ def api_activity(activity_id):
                 'id': actividad.miembro.id,
                 'name': actividad.miembro.nombre,
                 'email': actividad.miembro.email
-            }
+            },
+            'comments': comentarios
         })
+    finally:
+        session.close()
+
+@app.route("/api/activity/<int:activity_id>/comments", methods=["POST"])
+def api_activity_comments(activity_id):
+    payload = request.get_json(force=True, silent=True) or {}
+    name = payload.get('name', '').strip()
+    text = payload.get('text', '').strip()
+
+    errors = []
+    if not name:
+        errors.append('Commenter name is required.')
+    elif len(name) < 3 or len(name) > 80:
+        errors.append('Commenter name must be between 3 and 80 characters.')
+
+    if not text:
+        errors.append('Comment text is required.')
+    elif len(text) < 5:
+        errors.append('Comment text must be at least 5 characters long.')
+    elif len(text) > 300:
+        errors.append('Comment text must be 300 characters or fewer.')
+
+    session = Session()
+    try:
+        actividad = session.query(Actividad).filter(Actividad.id == activity_id).first()
+        if not actividad:
+            return jsonify({'errors': ['Activity not found']}), 404
+
+        if errors:
+            return jsonify({'errors': errors}), 400
+
+        comentario = Comentario(
+            nombre=name,
+            texto=text,
+            actividad_id=actividad.id
+        )
+        session.add(comentario)
+        session.commit()
+
+        return jsonify({
+            'id': comentario.id,
+            'name': comentario.nombre,
+            'text': comentario.texto,
+            'date': comentario.fecha.isoformat()
+        }), 201
+    except Exception:
+        session.rollback()
+        return jsonify({'errors': ['Unable to save comment. Please try again.']}), 500
     finally:
         session.close()
 
