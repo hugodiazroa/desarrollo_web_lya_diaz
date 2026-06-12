@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Activity Details</title>
+    <style>
+      .activity-info {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #0f0f0f;
+        border-radius: 5px;
+        background-color: #000000;
+      }
+
+      .activity-info h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .info-row {
+        margin: 10px 0;
+      }
+      .info-label {
+        font-weight: bold;
+        min-width: 150px;
+        display: inline-block;
+      }
+      .activity-images {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .activity-images img {
+        height: 5em;
+        width: auto;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .description-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin-top: 8px;
+      }
+      .no-images {
+        font-style: italic;
+        color: #666;
+        padding: 15px 0;
+      }
+      #loading {
+        text-align: center;
+        padding: 20px;
+        font-size: 1.1em;
+      }
+      .error {
+        color: #d32f2f;
+        padding: 15px;
+        border: 1px solid #d32f2f;
+        border-radius: 5px;
+        background-color: #ffebee;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav><a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('members') }}">Members</a></nav>
+
+    <div id="loading">Loading activity details...</div>
+    <div id="content" style="display:none;">
+      <div class="activity-info">
+        <h2 id="activityTitle"></h2>
+        <div class="info-row">
+          <span class="info-label">Category:</span>
+          <span id="activityCategory"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Day:</span>
+          <span id="activityDay"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Start Time:</span>
+          <span id="activityStartTime"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration:</span>
+          <span id="activityDuration"></span> minutes
+        </div>
+        <div class="info-row">
+          <span class="info-label">Owner:</span>
+          <span id="activityOwner"></span>
+        </div>
+      </div>
+
+      <div class="activities-section">
+        <h3>Description</h3>
+        <div id="activityDescription" class="description-text"></div>
+      </div>
+
+      <div class="activities-section">
+        <h3>Media</h3>
+        <div id="mediaContainer" class="activity-images"></div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const activityId = {{ activity_id }};
+        loadActivityDetail(activityId);
+      });
+
+      function loadActivityDetail(activityId) {
+        fetch(`/api/activity/${activityId}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Activity not found');
+            }
+            return response.json();
+          })
+          .then(data => displayActivityDetail(data))
+          .catch(error => {
+            document.getElementById('loading').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+          });
+      }
+
+      function displayActivityDetail(activity) {
+        document.getElementById('activityTitle').textContent = activity.name;
+        document.getElementById('activityCategory').textContent = activity.category;
+        document.getElementById('activityDay').textContent = activity.day;
+        document.getElementById('activityStartTime').textContent = activity.start_time;
+        document.getElementById('activityDuration').textContent = activity.duration;
+        document.getElementById('activityOwner').innerHTML = `<a href="/members/${activity.member.id}">${activity.member.name}</a>`;
+        document.getElementById('activityDescription').textContent = activity.description || 'No description provided.';
+
+        const mediaContainer = document.getElementById('mediaContainer');
+        if (activity.images && activity.images.length > 0) {
+          mediaContainer.innerHTML = activity.images.map(img => `
+            <img src="${img}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">
+          `).join('');
+        } else {
+          mediaContainer.innerHTML = '<div class="no-images">No media uploaded for this activity.</div>';
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+      }
+    </script>
+  </body>
+</html>

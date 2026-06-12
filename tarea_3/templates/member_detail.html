@@ -40,6 +40,10 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
+        cursor: pointer;
+      }
+      .activity-card:hover {
+        background-color: #333333;
       }
       .activity-text {
         flex: 1;
@@ -56,6 +60,10 @@
         font-size: 1.2em;
         font-weight: bold;
         margin-bottom: 10px;
+      }
+      .activity-title a {
+        color: inherit;
+        text-decoration: none;
       }
       .activity-detail {
         margin: 5px 0;
@@ -161,7 +169,7 @@
         const activitiesContainer = document.getElementById('activitiesContainer');
         if (member.activities && member.activities.length > 0) {
           activitiesContainer.innerHTML = member.activities.map(activity => `
-            <div class="activity-card">
+            <div class="activity-card" onclick="window.location.href='/activities/${activity.id}'">
               <div class="activity-text">
                 <div class="activity-title">${activity.name}</div>
                 <div class="activity-detail">

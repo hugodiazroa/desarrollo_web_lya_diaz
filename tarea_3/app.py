@@ -363,6 +363,48 @@ def metrics():
 def member_detail(member_id):
     return render_template("member_detail.html", member_id=member_id)
 
+@app.route("/activities/<int:activity_id>")
+def activity_detail(activity_id):
+    return render_template("activity_detail.html", activity_id=activity_id)
+
+@app.route("/api/activity/<int:activity_id>")
+def api_activity(activity_id):
+    session = Session()
+    try:
+        actividad = session.query(Actividad).filter(Actividad.id == activity_id).first()
+        if not actividad:
+            return jsonify({'error': 'Activity not found'}), 404
+
+        category_map = {
+            'arte': 'Artistic',
+            'deporte': 'Athletic',
+            'tecnología': 'Tech',
+            'social': 'Social',
+            'recreación': 'Recreational',
+            'otra': 'Other'
+        }
+        category = category_map.get(actividad.tipo.value, actividad.tipo.value)
+
+        images = [f.ruta_archivo + f.nombre_archivo for f in actividad.fotos] if actividad.fotos else []
+
+        return jsonify({
+            'id': actividad.id,
+            'name': actividad.nombre,
+            'category': category,
+            'day': actividad.dia.value,
+            'start_time': actividad.hora_inicio,
+            'duration': actividad.duracion,
+            'description': actividad.descripcion,
+            'images': images,
+            'member': {
+                'id': actividad.miembro.id,
+                'name': actividad.miembro.nombre,
+                'email': actividad.miembro.email
+            }
+        })
+    finally:
+        session.close()
+
 # API endpoints
 @app.route("/api/members")
 def api_members():
