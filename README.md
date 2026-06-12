@@ -1,1 +1,1 @@
-See README.md of /tarea_2/
+See README.md of /tarea_3/
