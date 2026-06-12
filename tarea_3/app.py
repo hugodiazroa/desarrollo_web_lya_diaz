@@ -505,10 +505,24 @@ def api_metrics():
         ).group_by(func.day(Miembro.fecha_registro)).all()
         daily_registrations = {str(day): count for day, count in daily_query}
 
+        # Activity owners by comuna
+        owner_query = session.query(
+            Comuna.nombre,
+            func.count(Actividad.id)
+        ).join(
+            Miembro,
+            Actividad.miembro_id == Miembro.id
+        ).join(
+            Comuna,
+            Miembro.comuna_id == Comuna.id
+        ).group_by(Comuna.nombre).all()
+        activity_owners = {comuna: count for comuna, count in owner_query}
+
         return jsonify({
             'roles': roles,
             'activities': activities,
-            'daily_registrations': daily_registrations
+            'daily_registrations': daily_registrations,
+            'activity_owners': activity_owners
         })
     finally:
         session.close()

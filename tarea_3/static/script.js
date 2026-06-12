@@ -463,6 +463,57 @@ function loadMetrics(){
           }]
         }
       });
+
+      // --- CHART 3: OWNERS ---
+      const ownerDataMap = data.activity_owners || {};
+      const ownerLabels = Object.keys(ownerDataMap).sort((a, b) => a.localeCompare(b));
+      const ownerData = ownerLabels.map(name => ownerDataMap[name] || 0);
+
+      new Chart(document.getElementById("ownersChart"), {
+        type: "bar",
+        data: {
+          labels: ownerLabels,
+          datasets: [{
+            label: "Activities owned by municipality",
+            data: ownerData,
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+            maxBarThickness: 40
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Activity count"
+              },
+              ticks: {
+                precision: 0
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Municipality"
+              },
+              ticks: {
+                autoSkip: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
+        }
+      });
     })
     .catch(error => console.error('Error loading metrics:', error));
 }
