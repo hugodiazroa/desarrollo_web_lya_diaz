@@ -398,20 +398,52 @@ function loadMetrics(){
     .then(data => {
       const roleCounts = data.roles;
       const activityCounts = data.activities;
+      const dailyRegistrations = data.daily_registrations || {};
 
-      // --- CHART 1: ROLES ---
+      // --- CHART 1: DAILY REGISTRATIONS ---
+      const dayLabels = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+      const dailyData = dayLabels.map(day => dailyRegistrations[day] || 0);
+
       new Chart(document.getElementById("rolesChart"), {
-        type: "pie",
+        type: "line",
         data: {
-          labels: ["Undergrad", "Graduate", "Staff", "Faculty"],
+          labels: dayLabels,
           datasets: [{
-            data: [
-              roleCounts.student_undergrad || 0,
-              roleCounts.student_grad || 0,
-              roleCounts.staff || 0,
-              roleCounts.faculty || 0
-            ]
+            label: "Members registered",
+            data: dailyData,
+            fill: false,
+            borderColor: "#3e95cd",
+            backgroundColor: "rgba(62,149,205,0.3)",
+            tension: 0.2,
+            pointRadius: 4,
+            pointBackgroundColor: "#3e95cd"
           }]
+        },
+        options: {
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Day of month"
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Members registered"
+              },
+              ticks: {
+                precision: 0
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
         }
       });
 

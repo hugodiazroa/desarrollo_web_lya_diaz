@@ -498,9 +498,17 @@ def api_metrics():
             category = category_map.get(tipo.value, tipo.value)
             activities[category] = count
 
+        # Daily registrations for days 1-31
+        daily_query = session.query(
+            func.day(Miembro.fecha_registro),
+            func.count(Miembro.id)
+        ).group_by(func.day(Miembro.fecha_registro)).all()
+        daily_registrations = {str(day): count for day, count in daily_query}
+
         return jsonify({
             'roles': roles,
-            'activities': activities
+            'activities': activities,
+            'daily_registrations': daily_registrations
         })
     finally:
         session.close()
