@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Members List</title>
+    <style> 
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        margin: 20px auto;
+        padding: 8px 12px;      
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      
+      .pagination button {
+        padding: 4px 8px;
+        font-size: 12px;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      #pageInfo {
+        font-size: 14px;
+        text-align: center;
+        min-width: 60px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body onload="loadMembers()">
+  	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('register') }}">Register</a>
+      <a href="{{ url_for('activity') }}">Activity</a>
+      <a href="{{ url_for('members') }}">Members</a>
+      <a href="{{ url_for('metrics') }}">Metrics</a>
+    </nav>
+
+    <h3>Filter by:</h3>
+    <select id="filter" onchange="currentPage=1; loadMembers()">
+      <option value="">All</option>
+      <option value="student_undergrad">Undergrad</option>
+      <option value="student_grad">Graduate</option>
+      <option value="staff">Staff</option>
+      <option value="faculty">Faculty</option>
+    </select>
+
+    <h3>Sort by:</h3>
+    <select id="sort" onchange="currentPage=1; loadMembers()">
+      <option value="name">Name</option>
+      <option value="email">Email</option>
+    </select>
+
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Email</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <div id="pagination" class="pagination">
+      <button id="prevBtn" onclick="changePage(-1)" disabled>«</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn" onclick="changePage(1)" disabled>»</button>
+    </div>
+  </body>
+</html>
