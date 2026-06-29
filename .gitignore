@@ -10,7 +10,6 @@ tarea_2/static/uploads/*
 !tarea_2/static/uploads/
 !tarea_2/static/uploads/default.png
 
-tarea_3/instructions/
 tarea_3/venv/
 tarea_3/__pycache__/
 tarea_3/database/__pycache__/
@@ -18,6 +17,15 @@ tarea_3/database/__pycache__/
 tarea_3/static/uploads/*
 !tarea_3/static/uploads/
 !tarea_3/static/uploads/default.png
+
+tarea_4/venv/
+tarea_4/__pycache__/
+tarea_4/database/__pycache__/
+
+tarea_4/static/uploads/*
+!tarea_4/static/uploads/
+!tarea_4/static/uploads/default.png
+
 
 venv/
 .venv/
