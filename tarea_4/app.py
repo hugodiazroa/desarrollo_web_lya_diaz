@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text, func, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
 from datetime import datetime
 import enum
@@ -360,6 +360,45 @@ def activity():
             session.close()
 
     return render_template("activity.html", errors=errors, form_data=form_data, schedule_items=form_data['schedule_items'])
+
+@app.route("/api/activities/search")
+def api_activities_search():
+    query = request.args.get("q", "").strip()
+    if len(query) < 3:
+        return jsonify([])
+
+    search_term = f"%{query.lower()}%"
+    session = Session()
+    try:
+        activities = (
+            session.query(Actividad)
+            .join(Miembro)
+            .filter(
+                or_(
+                    func.lower(Actividad.nombre).like(search_term),
+                    func.lower(Actividad.descripcion).like(search_term),
+                    func.lower(Actividad.tipo.cast(String)).like(search_term),
+                    func.lower(Miembro.nombre).like(search_term)
+                )
+            )
+            .order_by(Actividad.nombre)
+            .all()
+        )
+
+        results = []
+        for activity in activities:
+            results.append({
+                "id": activity.id,
+                "memberName": activity.miembro.nombre if activity.miembro else "",
+                "day": activity.dia.value if hasattr(activity.dia, "value") else str(activity.dia),
+                "type": activity.tipo.value if hasattr(activity.tipo, "value") else str(activity.tipo),
+                "municipality": activity.miembro.comuna.nombre if activity.miembro and activity.miembro.comuna else "",
+                "name": activity.nombre,
+                "description": activity.descripcion or ""
+            })
+        return jsonify(results)
+    finally:
+        session.close()
 
 @app.route("/members")
 def members():
