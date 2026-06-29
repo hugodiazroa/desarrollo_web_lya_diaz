@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Home - Scheduler</title>
+  </head>
+  <body>
+  	<div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('register') }}">Register</a>
+      <a href="{{ url_for('activity') }}">Activity</a>
+      <a href="{{ url_for('members') }}">Members</a>
+      <a href="{{ url_for('metrics') }}">Metrics</a>
+    </nav>
+    <h1>Scheduler</h1>
+    <p>This web application allows users to register as members of the faculty, view a list of all members and their activities, and access metrics and statistics about the community. Registered members create activities. </p>
+    {% if message %}
+      <div class="success-message" style="padding:0.75rem 1rem; border:1px solid #0a0; background:#e8f7e8; color:#060; margin-top:1rem; border-radius:4px;">
+        {{ message }}
+      </div>
+    {% endif %}
+    <h2>Recent Members</h2>
+    <table style="margin: 1rem;">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Email</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in recent_members %}
+        <tr onclick="window.location.href='/members/{{ member.id }}'" style="cursor:pointer;">
+          <td>{{ member.name }}</td>
+          <td>{{ member.type }}</td>
+          <td>{{ member.email }}</td>
+          <td>{{ member.registered }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

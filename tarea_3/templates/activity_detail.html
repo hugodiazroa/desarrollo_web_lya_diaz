@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Activity Details</title>
+    <style>
+      .activity-info {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #0f0f0f;
+        border-radius: 5px;
+        background-color: #000000;
+      }
+
+      .activity-info h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .info-row {
+        margin: 10px 0;
+      }
+      .info-label {
+        font-weight: bold;
+        min-width: 150px;
+        display: inline-block;
+      }
+      .activity-images {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .activity-images img {
+        height: 5em;
+        width: auto;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .description-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin-top: 8px;
+      }
+      .no-images {
+        font-style: italic;
+        color: #666;
+        padding: 15px 0;
+      }
+      #loading {
+        text-align: center;
+        padding: 20px;
+        font-size: 1.1em;
+      }
+      .error {
+        color: #d32f2f;
+        padding: 15px;
+        border: 1px solid #d32f2f;
+        border-radius: 5px;
+        background-color: #ffebee;
+      }
+      .comment-section {
+        margin-top: 30px;
+      }
+      .comment-list {
+        margin-top: 15px;
+        list-style: none;
+        padding: 0;
+      }
+      .comment-item {
+        border: 1px solid #000;
+        padding: 12px;
+        margin-bottom: 12px;
+        background-color: #000;
+      }
+      .comment-item .comment-header {
+        font-weight: bold;
+        margin-bottom: 4px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+      .comment-item .comment-body {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+      }
+      .comment-form label {
+        display: block;
+        margin: 10px 0 4px;
+      }
+      .comment-form input,
+      .comment-form textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #999;
+        box-sizing: border-box;
+      }
+      .comment-form button {
+        margin-top: 12px;
+        padding: 10px 16px;
+        border: none;
+        background-color: #666;
+        color: white;
+        cursor: pointer;
+      }
+      .comment-form button:hover {
+        background-color: #005fa3;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="userStatus" style="position:absolute; top:10px; right:10px; text-align:right;"></div>
+    <nav><a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('members') }}">Members</a></nav>
+
+    <div id="loading">Loading activity details...</div>
+    <div id="content" style="display:none;">
+      <div class="activity-info">
+        <h2 id="activityTitle"></h2>
+        <div class="info-row">
+          <span class="info-label">Category:</span>
+          <span id="activityCategory"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Day:</span>
+          <span id="activityDay"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Start Time:</span>
+          <span id="activityStartTime"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration:</span>
+          <span id="activityDuration"></span> minutes
+        </div>
+        <div class="info-row">
+          <span class="info-label">Owner:</span>
+          <span id="activityOwner"></span>
+        </div>
+      </div>
+
+      <div class="activities-section">
+        <h3>Description</h3>
+        <div id="activityDescription" class="description-text"></div>
+      </div>
+
+      <div class="activities-section">
+        <h3>Media</h3>
+        <div id="mediaContainer" class="activity-images"></div>
+      </div>
+
+      <div class="comment-section">
+        <h3>Add comment</h3>
+        <div id="commentFormErrors" class="error" style="display:none;"></div>
+        <form id="commentForm" class="comment-form">
+          <label for="commentName">Your name</label>
+          <input id="commentName" name="name" type="text" required minlength="3" maxlength="80" placeholder="Name" />
+
+          <label for="commentText">Comment</label>
+          <textarea id="commentText" name="text" rows="4" cols="50" required minlength="5" placeholder="Write your comment"></textarea>
+
+          <button type="submit">Add Comment</button>
+        </form>
+
+        <h3>Comments</h3>
+
+        <ul id="commentsList" class="comment-list"></ul>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const activityId = {{ activity_id }};
+        loadActivityDetail(activityId);
+      });
+
+      function loadActivityDetail(activityId) {
+        fetch(`/api/activity/${activityId}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Activity not found');
+            }
+            return response.json();
+          })
+          .then(data => displayActivityDetail(data))
+          .catch(error => {
+            document.getElementById('loading').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+          });
+      }
+
+      function displayActivityDetail(activity) {
+        document.getElementById('activityTitle').textContent = activity.name;
+        document.getElementById('activityCategory').textContent = activity.category;
+        document.getElementById('activityDay').textContent = activity.day;
+        document.getElementById('activityStartTime').textContent = activity.start_time;
+        document.getElementById('activityDuration').textContent = activity.duration;
+        document.getElementById('activityOwner').innerHTML = `<a href="/members/${activity.member.id}">${activity.member.name}</a>`;
+        document.getElementById('activityDescription').textContent = activity.description || 'No description provided.';
+
+        const mediaContainer = document.getElementById('mediaContainer');
+        if (activity.images && activity.images.length > 0) {
+          mediaContainer.innerHTML = activity.images.map(img => `
+            <img src="${img}" alt="${activity.name}" onclick="window.open(this.src, '_blank')">
+          `).join('');
+        } else {
+          mediaContainer.innerHTML = '<div class="no-images">No media uploaded for this activity.</div>';
+        }
+
+        displayComments(activity.comments || []);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+      }
+
+      function displayComments(comments) {
+        const commentsList = document.getElementById('commentsList');
+        if (!comments || comments.length === 0) {
+          commentsList.innerHTML = '<li class="comment-item">No comments yet. Be the first to add one.</li>';
+          return;
+        }
+
+        commentsList.innerHTML = comments.map(comment => `
+          <li class="comment-item">
+            <div class="comment-header">${comment.name} · ${new Date(comment.date).toLocaleString()}</div>
+            <div class="comment-body">${escapeHtml(comment.text)}</div>
+          </li>
+        `).join('');
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function handleCommentFormSubmit(event) {
+        event.preventDefault();
+        const activityId = {{ activity_id }};
+        const nameField = document.getElementById('commentName');
+        const textField = document.getElementById('commentText');
+        const errorContainer = document.getElementById('commentFormErrors');
+
+        const name = nameField.value.trim();
+        const text = textField.value.trim();
+        const errors = [];
+
+        if (!name) {
+          errors.push('Your name is required.');
+        } else if (name.length < 3 || name.length > 80) {
+          errors.push('Your name must be between 3 and 80 characters.');
+        }
+
+        if (!text) {
+          errors.push('Comment text is required.');
+        } else if (text.length < 5) {
+          errors.push('Comment text must be at least 5 characters long.');
+        }
+
+        if (errors.length > 0) {
+          errorContainer.style.display = 'block';
+          errorContainer.innerHTML = errors.map(error => `<div>${escapeHtml(error)}</div>`).join('');
+          return;
+        }
+
+        fetch(`/api/activity/${activityId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ name, text })
+        })
+          .then(response => response.json().then(data => ({ status: response.status, body: data })))
+          .then(({ status, body }) => {
+            if (status === 201) {
+              errorContainer.style.display = 'none';
+              nameField.value = '';
+              textField.value = '';
+              loadActivityDetail(activityId);
+            } else {
+              const errorMessages = body.errors || ['Unable to add comment.'];
+              errorContainer.innerHTML = errorMessages.map(error => `<div>${escapeHtml(error)}</div>`).join('');
+              errorContainer.style.display = 'block';
+            }
+          })
+          .catch(() => {
+            errorContainer.innerHTML = '<div>Unable to submit comment. Please try again.</div>';
+            errorContainer.style.display = 'block';
+          });
+      }
+
+      document.getElementById('commentForm').addEventListener('submit', handleCommentFormSubmit);
+    </script>
+  </body>
+</html>
