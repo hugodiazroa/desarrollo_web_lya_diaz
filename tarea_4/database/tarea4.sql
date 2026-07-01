@@ -131,14 +131,23 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `tarea4`.`nota` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `actividad_id` INT NOT NULL,
+  `miembro_id` INT NOT NULL,
   `nota` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_nota_actividad1_idx` (`actividad_id` ASC),
+  INDEX `fk_nota_miembro1_idx` (`miembro_id` ASC),
   CONSTRAINT `fk_nota_actividad1`
     FOREIGN KEY (`actividad_id`)
     REFERENCES `tarea4`.`actividad` (`id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_nota_miembro1`
+    FOREIGN KEY (`miembro_id`)
+    REFERENCES `tarea4`.`miembro` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  UNIQUE INDEX `uq_nota_actividad_miembro` (`actividad_id`, `miembro_id`)
+)
 ENGINE = InnoDB;
 
 

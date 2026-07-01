@@ -5,7 +5,8 @@ body {
   color: #FFD700;
 }
 
-nav a {
+nav a,
+nav a:visited {
   margin-right: 10px;
   color: #FFD700;
   text-decoration: none;
@@ -13,6 +14,16 @@ nav a {
 
 nav a:hover {
   color: #fff2a8;
+}
+
+a,
+a:visited {
+  color: #7db8ff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #b8d9ff;
 }
 
 form {
@@ -25,7 +36,7 @@ input, select, textarea, button {
   width: 100%;
   padding: 6px;
   background-color: #444;
-  color: #fff;
+  color: #FFD700;
   border: 1px solid #777;
 }
 
@@ -35,7 +46,7 @@ textarea {
 }
 
 input::placeholder {
-  color: #ccc;
+  color: #FFD700;
 }
 
 button {
@@ -107,7 +118,7 @@ canvas {
 .search-panel label {
   display: block;
   margin-bottom: 8px;
-  color: #fff;
+  color: #FFD700;
 }
 
 .result-card {
@@ -120,7 +131,7 @@ canvas {
 
 .result-card h2 {
   margin: 0 0 10px;
-  color: #fff;
+  color: #FFD700;
 }
 
 .result-card p {

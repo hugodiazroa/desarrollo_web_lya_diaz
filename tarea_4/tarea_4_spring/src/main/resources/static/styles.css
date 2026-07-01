@@ -5,14 +5,15 @@ body {
   color: #FFD700;
 }
 
-nav a {
+nav a,
+nav a:visited {
   margin-right: 10px;
-  color: #FFD700;
+  color: #7db8ff;
   text-decoration: none;
 }
 
 nav a:hover {
-  color: #fff2a8;
+  color: #b8d9ff;
 }
 
 h1 {
@@ -29,7 +30,7 @@ input[type="text"] {
   padding: 10px;
   border: 1px solid #777;
   background-color: #444;
-  color: #fff;
+  color: #FFD700;
   border-radius: 4px;
 }
 

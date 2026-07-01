@@ -29,6 +29,7 @@ function renderResult(activity, term) {
   const highlightedType = highlightMatches(activity.type, term);
   const dayValue = activity.day || '';
 
+  const gradeValue = activity.grade === '-' ? '-' : escapeHtml(activity.grade.toString());
   return `
     <article class="result-card">
       <h2>${highlightedName}</h2>
@@ -37,6 +38,8 @@ function renderResult(activity, term) {
       <p><strong>Type:</strong> ${highlightedType}</p>
       <p><strong>Municipality:</strong> ${highlightedMunicipality}</p>
       <p><strong>Description:</strong> ${highlightedDescription || '<span class="empty">No description provided</span>'}</p>
+      <p><strong>Grade:</strong> ${gradeValue}</p>
+      <p><a href="/activities/${activity.id}" onclick="console.log('navigate to activity', ${activity.id})">Grade this activity</a></p>
     </article>
   `;
 }

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text, func, or_
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Text, func, or_, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
 from datetime import datetime
 import enum
@@ -64,6 +64,7 @@ class Miembro(Base):
     comuna_id: Mapped[int] = mapped_column(Integer, ForeignKey('comuna.id'), nullable=False)
     comuna: Mapped["Comuna"] = relationship("Comuna", back_populates="miembros")
     actividades: Mapped[list["Actividad"]] = relationship("Actividad", back_populates="miembro")
+    notas: Mapped[list["Nota"]] = relationship("Nota", back_populates="miembro")
 
 class Actividad(Base):
     __tablename__ = 'actividad'
@@ -92,6 +93,7 @@ class Actividad(Base):
     miembro: Mapped["Miembro"] = relationship("Miembro", back_populates="actividades")
     fotos: Mapped[list["Foto"]] = relationship("Foto", back_populates="actividad")
     comentarios: Mapped[list["Comentario"]] = relationship("Comentario", back_populates="actividad")
+    notas: Mapped[list["Nota"]] = relationship("Nota", back_populates="actividad")
 
 class Foto(Base):
     __tablename__ = 'foto'
@@ -109,6 +111,18 @@ class Comentario(Base):
     fecha: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     actividad_id: Mapped[int] = mapped_column(Integer, ForeignKey('actividad.id'), nullable=False)
     actividad: Mapped["Actividad"] = relationship("Actividad", back_populates="comentarios")
+
+class Nota(Base):
+    __tablename__ = 'nota'
+    __table_args__ = (
+        UniqueConstraint('actividad_id', 'miembro_id', name='uq_nota_actividad_miembro'),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    actividad_id: Mapped[int] = mapped_column(Integer, ForeignKey('actividad.id'), nullable=False)
+    miembro_id: Mapped[int] = mapped_column(Integer, ForeignKey('miembro.id'), nullable=False)
+    nota: Mapped[int] = mapped_column(Integer, nullable=False)
+    actividad: Mapped["Actividad"] = relationship("Actividad", back_populates="notas")
+    miembro: Mapped["Miembro"] = relationship("Miembro", back_populates="notas")
 
 # Routes
 @app.route("/")
@@ -387,6 +401,9 @@ def api_activities_search():
 
         results = []
         for activity in activities:
+            grade_stats = session.query(func.avg(Nota.nota), func.count(Nota.id)).filter(Nota.actividad_id == activity.id).one()
+            average_grade = grade_stats[0]
+            grade_count = grade_stats[1] or 0
             results.append({
                 "id": activity.id,
                 "memberName": activity.miembro.nombre if activity.miembro else "",
@@ -394,7 +411,9 @@ def api_activities_search():
                 "type": activity.tipo.value if hasattr(activity.tipo, "value") else str(activity.tipo),
                 "municipality": activity.miembro.comuna.nombre if activity.miembro and activity.miembro.comuna else "",
                 "name": activity.nombre,
-                "description": activity.descripcion or ""
+                "description": activity.descripcion or "",
+                "grade": round(float(average_grade), 2) if grade_count else "-",
+                "gradeCount": grade_count
             })
         return jsonify(results)
     finally:
@@ -445,6 +464,20 @@ def api_activity(activity_id):
             for c in sorted(actividad.comentarios, key=lambda c: c.fecha, reverse=True)
         ]
 
+        grade_count = len(actividad.notas) if actividad.notas else 0
+        average_grade = None
+        if grade_count:
+            average_grade = round(sum(n.nota for n in actividad.notas) / grade_count, 2)
+
+        user_grade = None
+        user_name = request.args.get('user_name', '').strip()
+        if user_name:
+            miembro = session.query(Miembro).filter(Miembro.nombre == user_name).first()
+            if miembro:
+                nota = session.query(Nota).filter(Nota.actividad_id == actividad.id, Nota.miembro_id == miembro.id).first()
+                if nota:
+                    user_grade = nota.nota
+
         return jsonify({
             'id': actividad.id,
             'name': actividad.nombre,
@@ -459,8 +492,14 @@ def api_activity(activity_id):
                 'name': actividad.miembro.nombre,
                 'email': actividad.miembro.email
             },
-            'comments': comentarios
+            'comments': comentarios,
+            'grade': average_grade,
+            'gradeCount': grade_count,
+            'userGrade': user_grade
         })
+    except Exception as e:
+        app.logger.exception('Error in api_activity:')
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
     finally:
         session.close()
 
@@ -509,6 +548,65 @@ def api_activity_comments(activity_id):
     except Exception:
         session.rollback()
         return jsonify({'errors': ['Unable to save comment. Please try again.']}), 500
+    finally:
+        session.close()
+
+@app.route('/api/activity/<int:activity_id>/grade', methods=['POST'])
+def api_activity_grade(activity_id):
+    payload = request.get_json(force=True, silent=True) or {}
+    member_name = (payload.get('member_name') or '').strip()
+    raw_grade = payload.get('grade')
+
+    try:
+        grade = int(raw_grade)
+    except (TypeError, ValueError):
+        grade = None
+
+    errors = []
+    if not member_name:
+        errors.append('You must log in to assign a grade.')
+    if grade is None:
+        errors.append('Grade must be a whole number between 1 and 7.')
+    elif grade < 1 or grade > 7:
+        errors.append('Grade must be a whole number between 1 and 7.')
+
+    if errors:
+        return jsonify({'errors': errors}), 400 if member_name else 401
+
+    session = Session()
+    try:
+        actividad = session.query(Actividad).filter(Actividad.id == activity_id).first()
+        if not actividad:
+            return jsonify({'errors': ['Activity not found']}), 404
+
+        miembro = session.query(Miembro).filter(Miembro.nombre == member_name).first()
+        if not miembro:
+            return jsonify({'errors': ['Logged in user must be registered.']}), 401
+
+        existing_grade = session.query(Nota).filter(Nota.actividad_id == activity_id, Nota.miembro_id == miembro.id).first()
+        if existing_grade:
+            return jsonify({'errors': ['You have already graded this activity.']}), 400
+
+        nota = Nota(
+            actividad_id=activity_id,
+            miembro_id=miembro.id,
+            nota=grade
+        )
+        session.add(nota)
+        session.commit()
+
+        grade_count = session.query(func.count(Nota.id)).filter(Nota.actividad_id == activity_id).scalar() or 0
+        average_grade = session.query(func.avg(Nota.nota)).filter(Nota.actividad_id == activity_id).scalar()
+        if average_grade is not None:
+            average_grade = round(float(average_grade), 2)
+
+        return jsonify({
+            'average': average_grade,
+            'count': grade_count
+        }), 201
+    except Exception:
+        session.rollback()
+        return jsonify({'errors': ['Unable to save grade. Please try again.']}), 500
     finally:
         session.close()
 

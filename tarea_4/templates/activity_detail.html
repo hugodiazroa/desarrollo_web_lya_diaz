@@ -109,6 +109,45 @@
       .comment-form button:hover {
         background-color: #005fa3;
       }
+      .grade-section {
+        margin-top: 30px;
+        padding: 15px;
+        border: 1px solid #0f0f0f;
+        border-radius: 5px;
+        background-color: #000000;
+      }
+      .grade-section h3 {
+        margin-top: 0;
+      }
+      .grade-summary {
+        font-size: 1.05em;
+        margin-bottom: 12px;
+      }
+      .grade-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .grade-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .grade-form button {
+        margin-top: 12px;
+        padding: 10px 16px;
+        border: none;
+        background-color: #666;
+        color: white;
+        cursor: pointer;
+      }
+      .grade-form button:hover {
+        background-color: #005fa3;
+      }
+      .grade-message {
+        margin-top: 12px;
+        color: #d32f2f;
+      }
     </style>
   </head>
   <body>
@@ -151,6 +190,21 @@
         <div id="mediaContainer" class="activity-images"></div>
       </div>
 
+      <div class="grade-section">
+        <h3>Activity Grade</h3>
+        <div class="grade-summary">
+          <span id="gradeValue">-</span>
+          <span id="gradeCountText" style="color:#999;"></span>
+        </div>
+        <div id="gradeMessage" class="grade-message" style="display:none;"></div>
+        <form id="gradeForm" class="grade-form">
+          <div class="grade-options" id="gradeOptions"></div>
+          <button type="submit">Submit Grade</button>
+        </form>
+        <div id="gradeLocked" class="grade-message" style="display:none;">You must log in to assign a grade.</div>
+        <div id="gradeAlready" class="grade-message" style="display:none;">You have already graded this activity.</div>
+      </div>
+
       <div class="comment-section">
         <h3>Add comment</h3>
         <div id="commentFormErrors" class="error" style="display:none;"></div>
@@ -176,8 +230,14 @@
         loadActivityDetail(activityId);
       });
 
+      function getActiveUser() {
+        return localStorage.getItem('activeUser');
+      }
+
       function loadActivityDetail(activityId) {
-        fetch(`/api/activity/${activityId}`)
+        const userName = getActiveUser();
+        const query = userName ? `?user_name=${encodeURIComponent(userName)}` : '';
+        fetch(`/api/activity/${activityId}${query}`)
           .then(response => {
             if (!response.ok) {
               throw new Error('Activity not found');
@@ -198,6 +258,14 @@
         document.getElementById('activityDuration').textContent = activity.duration;
         document.getElementById('activityOwner').innerHTML = `<a href="/members/${activity.member.id}">${activity.member.name}</a>`;
         document.getElementById('activityDescription').textContent = activity.description || 'No description provided.';
+
+        const gradeLabel = document.getElementById('gradeValue');
+        const gradeCountText = document.getElementById('gradeCountText');
+        const gradeDisplay = activity.grade === null || activity.grade === undefined ? '-' : activity.grade;
+        gradeLabel.textContent = gradeDisplay;
+        gradeCountText.textContent = activity.gradeCount ? `(${activity.gradeCount} rating${activity.gradeCount === 1 ? '' : 's'})` : '';
+
+        initializeGradeForm(activity);
 
         const mediaContainer = document.getElementById('mediaContainer');
         if (activity.images && activity.images.length > 0) {
@@ -235,6 +303,90 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
+      }
+
+      function initializeGradeForm(activity) {
+        const gradeForm = document.getElementById('gradeForm');
+        const gradeOptions = document.getElementById('gradeOptions');
+        const gradeLocked = document.getElementById('gradeLocked');
+        const gradeAlready = document.getElementById('gradeAlready');
+        const gradeMessage = document.getElementById('gradeMessage');
+
+        const activeUser = getActiveUser();
+        gradeMessage.style.display = 'none';
+        gradeAlready.style.display = 'none';
+        gradeLocked.style.display = 'none';
+
+        gradeOptions.innerHTML = '';
+        for (let value = 1; value <= 7; value++) {
+          gradeOptions.innerHTML += `
+            <label class="grade-option">
+              <input type="radio" name="grade" value="${value}"> ${value}
+            </label>
+          `;
+        }
+
+        if (!activeUser) {
+          gradeForm.style.display = 'none';
+          gradeLocked.style.display = 'block';
+          return;
+        }
+
+        if (activity.userGrade !== null && activity.userGrade !== undefined) {
+          gradeForm.style.display = 'none';
+          gradeAlready.style.display = 'block';
+        } else {
+          gradeForm.style.display = 'block';
+          gradeAlready.style.display = 'none';
+          gradeLocked.style.display = 'none';
+        }
+      }
+
+      function handleGradeFormSubmit(event) {
+        event.preventDefault();
+        const activityId = {{ activity_id }};
+        const gradeValue = document.querySelector('input[name="grade"]:checked');
+        const gradeMessage = document.getElementById('gradeMessage');
+        const activeUser = getActiveUser();
+
+        if (!activeUser) {
+          gradeMessage.textContent = 'You must log in to assign a grade.';
+          gradeMessage.style.display = 'block';
+          return;
+        }
+
+        if (!gradeValue) {
+          gradeMessage.textContent = 'Please select a grade between 1 and 7.';
+          gradeMessage.style.display = 'block';
+          return;
+        }
+
+        fetch(`/api/activity/${activityId}/grade`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            member_name: activeUser,
+            grade: Number(gradeValue.value)
+          })
+        })
+          .then(response => response.json().then(data => ({ status: response.status, body: data })))
+          .then(({ status, body }) => {
+            if (status === 201) {
+              gradeMessage.style.display = 'none';
+              loadActivityDetail(activityId);
+            } else {
+              const errorMessages = body.errors || ['Unable to add grade.'];
+              gradeMessage.innerHTML = errorMessages.map(error => `<div>${escapeHtml(error)}</div>`).join('');
+              gradeMessage.style.display = 'block';
+            }
+          })
+          .catch(() => {
+            gradeMessage.textContent = 'Unable to submit grade. Please try again.';
+            gradeMessage.style.display = 'block';
+          });
       }
 
       function handleCommentFormSubmit(event) {
@@ -293,6 +445,7 @@
           });
       }
 
+      document.getElementById('gradeForm').addEventListener('submit', handleGradeFormSubmit);
       document.getElementById('commentForm').addEventListener('submit', handleCommentFormSubmit);
     </script>
   </body>

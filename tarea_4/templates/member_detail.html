@@ -169,7 +169,7 @@
         const activitiesContainer = document.getElementById('activitiesContainer');
         if (member.activities && member.activities.length > 0) {
           activitiesContainer.innerHTML = member.activities.map(activity => `
-            <div class="activity-card" onclick="window.location.href='/activities/${activity.id}'">
+            <div class="activity-card" onclick="console.log('navigate to activity', ${activity.id}); window.location.href='/activities/${activity.id}'">
               <div class="activity-text">
                 <div class="activity-title">${activity.name}</div>
                 <div class="activity-detail">

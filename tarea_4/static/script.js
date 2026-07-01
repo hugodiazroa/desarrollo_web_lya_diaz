@@ -393,6 +393,11 @@ function showErrorAndLogout(errorMessage){
 }
 
 function loadMetrics(){
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded; skipping metrics rendering');
+    return;
+  }
+
   fetch('/api/metrics')
     .then(response => response.json())
     .then(data => {
